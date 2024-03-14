@@ -71,7 +71,6 @@ func (api *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
 func (api *Api) Response(object any) {
 	api.Context.JSON(http.StatusOK, model.Response{
 		Code:       0,
-		Message:    "ok",
 		Data:       object,
 		Successful: true,
 	})
@@ -81,7 +80,16 @@ func (api *Api) Response(object any) {
 func (api *Api) ResponseOk() {
 	api.Context.JSON(http.StatusOK, model.Response{
 		Code:       0,
-		Message:    "ok",
+		Data:       nil,
+		Successful: true,
+	})
+}
+
+// ResponseMessage 方法用于发送一个成功的响应，但没有数据返回
+func (api *Api) ResponseMessage(message string) {
+	api.Context.JSON(http.StatusOK, model.Response{
+		Code:       0,
+		Message:    message,
 		Data:       nil,
 		Successful: true,
 	})

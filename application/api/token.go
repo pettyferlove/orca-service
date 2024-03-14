@@ -17,6 +17,11 @@ type LoginInfo struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type TokenInfo struct {
+	Token string `json:"token"`
+	Type  string `json:"type,default=Bearer"`
+}
+
 func (t Token) Create(c *gin.Context) {
 	var loginInfo LoginInfo
 	err := t.MakeContext(c).Bind(&loginInfo).Errors
@@ -31,7 +36,7 @@ func (t Token) Create(c *gin.Context) {
 		t.ResponseBusinessError(1, err.Error())
 		return
 	}
-	t.Response(userToken)
+	t.Response(TokenInfo{Token: userToken, Type: "Bearer"})
 	return
 }
 
