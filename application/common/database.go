@@ -58,7 +58,7 @@ func ConnectMysql(host, port, username, password, database string) (*gorm.DB, er
 	return gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.New(
 			// 设置日志级别
-			log.GetDefaultLogger(),
+			log.DefaultLogger(),
 			logger.Config{
 				SlowThreshold:             time.Second,
 				LogLevel:                  logger.Info, // GORM 日志级别

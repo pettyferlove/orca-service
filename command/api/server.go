@@ -8,7 +8,7 @@ import (
 	"orca-service/application/common"
 	"orca-service/application/router"
 	"orca-service/global"
-	"orca-service/global/logger"
+	log "orca-service/global/logger"
 	"orca-service/global/security"
 	"orca-service/global/util"
 	"os"
@@ -34,22 +34,21 @@ func init() {
 func run() error {
 	file, err := os.ReadFile(configYaml)
 	if err != nil {
-		logger.Error("error reading configuration file", err)
+		log.Error("error reading configuration file", err)
 	}
 	err = yaml.Unmarshal(file, &global.Config)
 	if err != nil {
-		logger.Error("error parsing configuration file", err)
+		log.Error("error parsing configuration file", err)
 	}
 
-	logger.SetDefaultLoggerLevel(logger.DebugLevel)
+	log.SetDefaultLoggerLevel(log.DebugLevel)
 
 	gin.SetMode(global.Config.Server.Mode)
 	r := gin.New()
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
-		logger.Debug("endpoint %v %v %v %v", httpMethod, absolutePath, handlerName, nuHandlers)
+		log.Debug("endpoint %v %v %v %v", httpMethod, absolutePath, handlerName, nuHandlers)
 	}
-	logger.Debug("server run mode: " + global.Config.Server.Mode)
-
+	log.Debug("server run mode: " + global.Config.Server.Mode)
 	// 定义404处理路由
 	r.NoRoute(router.NoRouteHandler)
 	// 定义ping处理路由
@@ -80,7 +79,7 @@ func run() error {
 
 	err = common.Migrate()
 	if err != nil {
-		logger.Error("database migration failure")
+		log.Error("database migration failure")
 		return err
 	}
 

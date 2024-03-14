@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"orca-service/global"
-	"orca-service/global/logger"
+	log "orca-service/global/logger"
 	"orca-service/global/model"
 	"orca-service/global/util"
 )
@@ -25,7 +25,7 @@ func (api *Api) AddError(err error) {
 	if api.Errors == nil {
 		api.Errors = err
 	} else if err != nil {
-		logger.Error("api process error, error:%v", err)
+		log.Error("api process error, error:%v", err)
 		api.Errors = fmt.Errorf("%v; %w", api.Errors, err)
 	}
 }

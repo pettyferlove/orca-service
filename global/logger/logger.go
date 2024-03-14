@@ -56,37 +56,13 @@ func SetDefaultLoggerLevel(level string) {
 	defaultLogger.Store(NewLogger(level))
 }
 
-// GetDefaultLogger 获取默认日志对象
-func GetDefaultLogger() *Logger {
+// DefaultLogger 获取默认日志对象
+func DefaultLogger() *Logger {
 	return defaultLogger.Load().(*Logger)
 }
 
-func (l *Logger) Printf(format string, v ...interface{}) {
-	l.Logger.Info(fmt.Sprintf(format, v...))
-}
-
-func (l *Logger) Debug(format string, v ...interface{}) {
-	l.Logger.Debug(fmt.Sprintf(format, v...))
-}
-
-func (l *Logger) Info(format string, v ...interface{}) {
-	l.Logger.Info(fmt.Sprintf(format, v...))
-}
-
-func (l *Logger) Warn(format string, v ...interface{}) {
-	l.Logger.Warn(fmt.Sprintf(format, v...))
-}
-
-func (l *Logger) Error(format string, v ...interface{}) {
-	l.Logger.Error(fmt.Sprintf(format, v...))
-}
-
-func (l *Logger) Fatal(format string, v ...interface{}) {
-	l.Logger.Fatal(fmt.Sprintf(format, v...))
-}
-
-func (l *Logger) Panic(format string, v ...interface{}) {
-	l.Logger.Panic(fmt.Sprintf(format, v...))
+func (l *Logger) Printf(s string, i ...interface{}) {
+	defaultLogger.Load().(*Logger).Info(fmt.Sprintf(s, i...))
 }
 
 func Debug(format string, v ...interface{}) {
