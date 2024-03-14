@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"orca-service/global"
-	"orca-service/global/entity"
+	"orca-service/global/model"
 )
 
 func AccessControlMiddleware() gin.HandlerFunc {
@@ -13,7 +13,7 @@ func AccessControlMiddleware() gin.HandlerFunc {
 		tenantId := "000001"
 		service := "orca-service"
 		if !exists {
-			c.AbortWithStatusJSON(http.StatusForbidden, entity.ResponseEntity{
+			c.AbortWithStatusJSON(http.StatusForbidden, model.Response{
 				Code:       1,
 				Message:    "User roles are missing. Please assign roles to the user.",
 				Successful: false,
@@ -35,7 +35,7 @@ func AccessControlMiddleware() gin.HandlerFunc {
 
 		}
 		if !hasRole {
-			c.AbortWithStatusJSON(http.StatusForbidden, entity.ResponseEntity{
+			c.AbortWithStatusJSON(http.StatusForbidden, model.Response{
 				Code:       1,
 				Message:    "You do not have the required roles to access this resource.",
 				Successful: false,

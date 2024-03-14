@@ -4,7 +4,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"orca-service/global/entity"
+	"orca-service/global/model"
 	"orca-service/global/security"
 	"orca-service/global/util"
 	"strings"
@@ -15,7 +15,7 @@ func AuthenticationMiddleware() gin.HandlerFunc {
 		token := c.Request.Header.Get("Authorization")
 		token = strings.Replace(token, "Bearer ", "", 1)
 		if token == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, entity.ResponseEntity{
+			c.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
 				Code:       1,
 				Message:    "The request does not carry a token and there is no access permission.",
 				Data:       nil,
@@ -26,7 +26,7 @@ func AuthenticationMiddleware() gin.HandlerFunc {
 		j := security.NewJWT()
 		jwtClaims, err := j.ParserToken(token)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, entity.ResponseEntity{
+			c.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
 				Code:       1,
 				Message:    "Token parsing failed.",
 				Data:       nil,

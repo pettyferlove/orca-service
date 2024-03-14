@@ -8,7 +8,6 @@ import (
 	security "orca-service/global/security/model"
 )
 
-// Initialize the model from a string.
 var text = `
 [request_definition]
 r = tenant, subject, object, action, service

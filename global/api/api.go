@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"orca-service/global"
-	"orca-service/global/entity"
-	"orca-service/global/log"
+	"orca-service/global/logger"
+	"orca-service/global/model"
 	"orca-service/global/util"
 )
 
@@ -25,7 +25,7 @@ func (api *Api) AddError(err error) {
 	if api.Errors == nil {
 		api.Errors = err
 	} else if err != nil {
-		log.Error("api process error, error:%v", err)
+		logger.Error("api process error, error:%v", err)
 		api.Errors = fmt.Errorf("%v; %w", api.Errors, err)
 	}
 }
@@ -69,7 +69,7 @@ func (api *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
 
 // Response 方法用于发送一个成功的响应
 func (api *Api) Response(object any) {
-	api.Context.JSON(http.StatusOK, entity.ResponseEntity{
+	api.Context.JSON(http.StatusOK, model.Response{
 		Code:       0,
 		Message:    "ok",
 		Data:       object,
@@ -79,7 +79,7 @@ func (api *Api) Response(object any) {
 
 // ResponseOk 方法用于发送一个成功的响应，但没有数据返回
 func (api *Api) ResponseOk() {
-	api.Context.JSON(http.StatusOK, entity.ResponseEntity{
+	api.Context.JSON(http.StatusOK, model.Response{
 		Code:       0,
 		Message:    "ok",
 		Data:       nil,
@@ -89,7 +89,7 @@ func (api *Api) ResponseOk() {
 
 // ResponseBusinessError 方法用于发送一个业务错误的响应
 func (api *Api) ResponseBusinessError(code int, message string) {
-	api.Context.AbortWithStatusJSON(http.StatusOK, entity.ResponseEntity{
+	api.Context.AbortWithStatusJSON(http.StatusOK, model.Response{
 		Code:       code,
 		Message:    message,
 		Data:       nil,
@@ -99,7 +99,7 @@ func (api *Api) ResponseBusinessError(code int, message string) {
 
 // ResponseError 方法用于发送一个错误的响应
 func (api *Api) ResponseError(code int, message string) {
-	api.Context.AbortWithStatusJSON(http.StatusInternalServerError, entity.ResponseEntity{
+	api.Context.AbortWithStatusJSON(http.StatusInternalServerError, model.Response{
 		Code:       code,
 		Message:    message,
 		Data:       nil,

@@ -13,18 +13,18 @@ const (
 	SubjectPriorityEffect = "subjectPriority(p_effect) || deny"
 )
 
-// SecurityEffector is default effector for Casbin.
-type SecurityEffector struct {
+// Effector is default effector for Casbin.
+type Effector struct {
 }
 
 // NewSecurityEffector is the constructor for SecurityEffector.
-func NewSecurityEffector() *SecurityEffector {
-	e := SecurityEffector{}
+func NewSecurityEffector() *Effector {
+	e := Effector{}
 	return &e
 }
 
 // MergeEffects merges all matching results collected by the enforcer into a single decision.
-func (e *SecurityEffector) MergeEffects(expr string, effects []effector.Effect, matches []float64, policyIndex int, policyLength int) (effector.Effect, int, error) {
+func (e *Effector) MergeEffects(expr string, effects []effector.Effect, matches []float64, policyIndex int, policyLength int) (effector.Effect, int, error) {
 	result := effector.Indeterminate
 	explainIndex := -1
 

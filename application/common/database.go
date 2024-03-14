@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"orca-service/global"
-	"orca-service/global/log"
+	log "orca-service/global/logger"
 	"orca-service/global/util"
 	"reflect"
 	"time"
@@ -57,10 +57,11 @@ func ConnectMysql(host, port, username, password, database string) (*gorm.DB, er
 		username, password, host, port, database)
 	return gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.New(
-			log.NewLogger(),
+			// 设置日志级别
+			log.GetDefaultLogger(),
 			logger.Config{
 				SlowThreshold:             time.Second,
-				LogLevel:                  logger.Info,
+				LogLevel:                  logger.Info, // GORM 日志级别
 				IgnoreRecordNotFoundError: true,
 				ParameterizedQueries:      true,
 				Colorful:                  false,

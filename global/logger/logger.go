@@ -1,10 +1,9 @@
-package log
+package logger
 
 import (
 	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 	"sync/atomic"
 )
@@ -16,69 +15,50 @@ type Logger struct {
 var defaultLogger atomic.Value
 
 func init() {
-	defaultLogger.Store(NewLogger())
+	defaultLogger.Store(NewLogger(InfoLevel))
 }
 
-func NewLogger() *Logger {
+// NewLogger 创建一个新的日志对象
+func NewLogger(level string) *Logger {
+	var zapLevel zapcore.Level
+	switch level {
+	case DebugLevel:
+		zapLevel = zapcore.DebugLevel
+	case InfoLevel:
+		zapLevel = zapcore.InfoLevel
+	case WarnLevel:
+		zapLevel = zapcore.WarnLevel
+	case ErrorLevel:
+		zapLevel = zapcore.ErrorLevel
+	case FatalLevel:
+		zapLevel = zapcore.FatalLevel
+	case PanicLevel:
+		zapLevel = zapcore.PanicLevel
+	case TraceLevel:
+		zapLevel = zapcore.DebugLevel
+	default:
+		zapLevel = zapcore.InfoLevel
+	}
 	coreList := make([]zapcore.Core, 0)
-	encoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
-	coreList = append(coreList, zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel))
-
-	debugJackLogger := &lumberjack.Logger{
-		Filename:   "./logs/debug.log",
-		MaxSize:    100,
-		MaxAge:     30,
-		MaxBackups: 30,
-		LocalTime:  true,
-		Compress:   false,
-	}
-	coreList = append(coreList, zapcore.NewCore(encoder, zapcore.AddSync(debugJackLogger), zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.DebugLevel
-	})))
-
-	infoJackLogger := &lumberjack.Logger{
-		Filename:   "./logs/info.log",
-		MaxSize:    100,
-		MaxAge:     30,
-		MaxBackups: 30,
-		LocalTime:  true,
-		Compress:   false,
-	}
-	coreList = append(coreList, zapcore.NewCore(encoder, zapcore.AddSync(infoJackLogger), zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.InfoLevel
-	})))
-
-	warnJackLogger := &lumberjack.Logger{
-		Filename:   "./logs/warn.log",
-		MaxSize:    100,
-		MaxAge:     30,
-		MaxBackups: 30,
-		LocalTime:  true,
-		Compress:   false,
-	}
-
-	coreList = append(coreList, zapcore.NewCore(encoder, zapcore.AddSync(warnJackLogger), zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.WarnLevel
-	})))
-
-	errorJackLogger := &lumberjack.Logger{
-		Filename:   "./logs/error.log",
-		MaxSize:    100,
-		MaxAge:     30,
-		MaxBackups: 30,
-		LocalTime:  true,
-		Compress:   false,
-	}
-	coreList = append(coreList, zapcore.NewCore(encoder, zapcore.AddSync(errorJackLogger), zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= zapcore.ErrorLevel
-	})))
-
+	config := zap.NewDevelopmentEncoderConfig()
+	config.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05") // 修改这行来改变时间格式
+	encoder := zapcore.NewConsoleEncoder(config)
+	coreList = append(coreList, zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapLevel))
 	core := zapcore.NewTee(coreList...)
 	zapLogger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(zapcore.ErrorLevel))
-
 	return &Logger{
 		Logger: zapLogger,
 	}
+}
+
+// SetDefaultLoggerLevel 设置默认日志级别
+func SetDefaultLoggerLevel(level string) {
+	defaultLogger.Store(NewLogger(level))
+}
+
+// GetDefaultLogger 获取默认日志对象
+func GetDefaultLogger() *Logger {
+	return defaultLogger.Load().(*Logger)
 }
 
 func (l *Logger) Printf(format string, v ...interface{}) {

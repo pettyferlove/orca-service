@@ -3,7 +3,7 @@ package common
 import (
 	"context"
 	"github.com/google/uuid"
-	bm "orca-service/application/model"
+	bm "orca-service/application/entity"
 	"orca-service/global"
 	"orca-service/global/config"
 	"orca-service/global/security"

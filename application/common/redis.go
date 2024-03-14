@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"orca-service/global"
-	"orca-service/global/log"
+	"orca-service/global/logger"
 )
 
 var ctx = context.Background()
@@ -26,10 +26,10 @@ func InitRedis() error {
 	})
 	pong, err := r.Ping(ctx).Result()
 	if err != nil {
-		log.Error("redis ping failed: %v", err)
+		logger.Error("redis ping failed: %v", err)
 		return err
 	} else {
-		log.Info("redis ping response: %s", pong)
+		logger.Info("redis ping response: %s", pong)
 	}
 	global.RedisClient = r
 	return nil

@@ -1,8 +1,8 @@
-package model
+package entity
 
 import "time"
 
-type BaseModel struct {
+type BaseEntity struct {
 	DelFlag    bool      `json:"del_flag" gorm:"comment:删除标记"`
 	Creator    string    `json:"creator" gorm:"size:128;comment:创建人"`
 	CreateTime time.Time `json:"create_time" gorm:"comment:创建时间"`

@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"orca-service/global/log"
+	"orca-service/global/logger"
 	"orca-service/global/security"
 	"orca-service/global/security/model"
 	"time"
@@ -11,7 +11,7 @@ import (
 type Token struct{}
 
 func (t *Token) Create(username string, password string) (string, error) {
-	log.Debug("username: %s, password: %s", username, password)
+	logger.Debug("username: %s, password: %s", username, password)
 	j := security.NewJWT()
 	token, err := j.CreateToken(security.JWTClaims{
 		UserDetail: model.UserDetail{

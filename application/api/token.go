@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"orca-service/application/handler"
 	"orca-service/global/api"
-	"orca-service/global/log"
+	"orca-service/global/logger"
 	"orca-service/global/security"
 )
 
@@ -21,7 +21,7 @@ func (t Token) Create(c *gin.Context) {
 	var loginInfo LoginInfo
 	err := t.MakeContext(c).Bind(&loginInfo).Errors
 	if err != nil {
-		log.Error(err.Error())
+		logger.Error(err.Error())
 		t.ResponseBusinessError(1, err.Error())
 		return
 	}

@@ -1,15 +1,15 @@
 package common
 
 import (
-	"orca-service/application/model"
+	"orca-service/application/entity"
 	"orca-service/global"
 )
 
 func Migrate() error {
 	migrator := global.DatabaseClient.Migrator()
 	err := migrator.AutoMigrate(
-		&model.User{},
-		&model.UserInfo{},
+		&entity.User{},
+		&entity.UserInfo{},
 	)
 	if err != nil {
 		return err

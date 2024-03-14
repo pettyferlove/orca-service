@@ -3,7 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	global "orca-service/global/entity"
+	"orca-service/global/model"
 )
 
 var (
@@ -18,7 +18,7 @@ func InitRouter(r *gin.Engine) {
 }
 
 func NoRouteHandler(c *gin.Context) {
-	c.JSON(http.StatusNotFound, global.ResponseEntity{
+	c.JSON(http.StatusNotFound, model.Response{
 		Code:       1,
 		Message:    "not found",
 		Successful: false,
@@ -26,7 +26,7 @@ func NoRouteHandler(c *gin.Context) {
 }
 
 func PingHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, global.ResponseEntity{
+	c.JSON(http.StatusOK, model.Response{
 		Message: "pong",
 	})
 }

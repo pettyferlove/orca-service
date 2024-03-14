@@ -1,4 +1,4 @@
-package model
+package entity
 
 import "time"
 
@@ -12,7 +12,7 @@ type UserInfo struct {
 	Avatar   string    `json:"avatar" gorm:"size:1000;comment:用户头像"`
 	Email    string    `json:"email" gorm:"size:128;comment:电子邮件"`
 	Address  string    `json:"address" gorm:"size:400;comment:居住地址"`
-	BaseModel
+	BaseEntity
 }
 
 func (UserInfo) TableName() string {
