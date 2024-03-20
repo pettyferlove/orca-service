@@ -1,4 +1,4 @@
-package model
+package entity
 
 // SecurityRule 安全规则（表结构不允许调整）
 type SecurityRule struct {
