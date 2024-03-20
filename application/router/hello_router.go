@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"orca-service/application/api"
+	"orca-service/application/handler"
 	"orca-service/global/security/middleware"
 )
 
@@ -12,7 +12,7 @@ func init() {
 }
 
 func registerHelloRouter(group *gin.RouterGroup) {
-	hello := api.Hello{}
+	hello := handler.Hello{}
 	helloGroup := group.Group("/hello",
 		middleware.AuthenticationMiddleware(),
 		//middleware.AccessControlMiddleware(),

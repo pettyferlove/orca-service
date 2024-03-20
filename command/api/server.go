@@ -49,10 +49,6 @@ func run() error {
 		log.Debug("endpoint %v %v %v %v", httpMethod, absolutePath, handlerName, nuHandlers)
 	}
 	log.Debug("server run mode: " + global.Config.Server.Mode)
-	// 定义404处理路由
-	r.NoRoute(router.NoRouteHandler)
-	// 定义ping处理路由
-	r.GET("/ping", router.PingHandler)
 
 	if err := util.InitTranslator("zh"); err != nil {
 		return err

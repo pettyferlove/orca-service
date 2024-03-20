@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"orca-service/global/model"
+	"time"
 )
 
 var (
@@ -11,7 +12,9 @@ var (
 )
 
 func InitRouter(r *gin.Engine) {
-	group := r.Group("/api/v1")
+	r.NoRoute(NoRouteHandler)
+	r.GET("/ping", PingHandler)
+	group := r.Group("/handler/v1")
 	for _, f := range router {
 		f(group)
 	}
@@ -22,11 +25,14 @@ func NoRouteHandler(c *gin.Context) {
 		Code:       1,
 		Message:    "not found",
 		Successful: false,
+		Timestamp:  time.Now().Unix(),
 	})
 }
 
 func PingHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, model.Response{
-		Message: "pong",
+		Code:       0,
+		Successful: true,
+		Timestamp:  time.Now().Unix(),
 	})
 }

@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"errors"
@@ -15,26 +15,26 @@ import (
 	"time"
 )
 
-// Api 结构体用于处理 API 请求和响应
-type Api struct {
+// Handler 结构体用于处理请求
+type Handler struct {
 	Context  *gin.Context
 	Errors   error
 	DataBase *gorm.DB
 	Redis    *redis.Client
 }
 
-// AddError 方法用于添加一个新的错误到 Api 结构体
-func (api *Api) AddError(err error) {
+// AddError 方法用于添加一个新的错误到 Handler 结构体
+func (api *Handler) AddError(err error) {
 	if api.Errors == nil {
 		api.Errors = err
 	} else if err != nil {
-		log.Error("api process error, error:%v", err)
+		log.Error("handler process error, error:%v", err)
 		api.Errors = fmt.Errorf("%v; %w", api.Errors, err)
 	}
 }
 
-// MakeContext 方法用于设置 Api 结构体的上下文
-func (api *Api) MakeContext(c *gin.Context) *Api {
+// MakeContext 方法用于设置 Handler 结构体的上下文
+func (api *Handler) MakeContext(c *gin.Context) *Handler {
 	api.Context = c
 	api.DataBase = global.DatabaseClient.WithContext(c)
 	api.Redis = global.RedisClient
@@ -42,7 +42,7 @@ func (api *Api) MakeContext(c *gin.Context) *Api {
 }
 
 // Bind 方法用于绑定请求数据到指定的结构体
-func (api *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
+func (api *Handler) Bind(d interface{}, bindings ...binding.Binding) *Handler {
 	var err error
 	if len(bindings) == 0 {
 		bindings = cache.GetBinding(d)
@@ -72,7 +72,7 @@ func (api *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
 }
 
 // Response 方法用于发送一个成功的响应
-func (api *Api) Response(object any) {
+func (api *Handler) Response(object any) {
 	api.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       0,
@@ -82,7 +82,7 @@ func (api *Api) Response(object any) {
 }
 
 // ResponseOk 方法用于发送一个成功的响应，但没有数据返回
-func (api *Api) ResponseOk() {
+func (api *Handler) ResponseOk() {
 	api.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       0,
@@ -92,7 +92,7 @@ func (api *Api) ResponseOk() {
 }
 
 // ResponseMessage 方法用于发送一个成功的响应，但没有数据返回
-func (api *Api) ResponseMessage(message string) {
+func (api *Handler) ResponseMessage(message string) {
 	api.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       0,
@@ -103,7 +103,7 @@ func (api *Api) ResponseMessage(message string) {
 }
 
 // ResponseBusinessError 方法用于发送一个业务错误的响应
-func (api *Api) ResponseBusinessError(code int, message string) {
+func (api *Handler) ResponseBusinessError(code int, message string) {
 	api.Context.AbortWithStatusJSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       code,
@@ -114,7 +114,7 @@ func (api *Api) ResponseBusinessError(code int, message string) {
 }
 
 // ResponseError 方法用于发送一个错误的响应
-func (api *Api) ResponseError(code int, message string) {
+func (api *Handler) ResponseError(code int, message string) {
 	api.Context.AbortWithStatusJSON(http.StatusInternalServerError, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       code,

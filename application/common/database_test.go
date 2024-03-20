@@ -78,7 +78,7 @@ func TestCreate(t *testing.T) {
 		},
 		Permissions: []string{
 			"sys:user:*",
-			"api:hello:get",
+			"handler:hello:get",
 		},
 	})
 	err = global.DatabaseClient.Migrator().AutoMigrate(&bm.User{})

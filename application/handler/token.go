@@ -1,58 +1,63 @@
 package handler
 
 import (
-	"github.com/dgrijalva/jwt-go"
-	log "orca-service/global/logger"
+	"github.com/gin-gonic/gin"
+	"orca-service/global/handler"
+	"orca-service/global/logger"
 	"orca-service/global/security"
-	"orca-service/global/security/model"
-	"time"
 )
 
-type Token struct{}
-
-func (t *Token) Create(username string, password string) (string, error) {
-	log.Debug("username: %s, password: %s", username, password)
-	j := security.NewJWT()
-	token, err := j.CreateToken(security.JWTClaims{
-		UserDetail: model.UserDetail{
-			Id:       "0000001",
-			UserName: "Alex Pettyfer",
-			NickName: "Pettyfer",
-			Avatar:   "https://avatars3.githubusercontent.com/u/42489393?s=460&v=4",
-			Email:    "pettyferlove@live.cn",
-		},
-		Roles: []string{
-			"ROLE_ADMIN",
-			"ROLE_USER",
-		},
-		Permissions: []string{
-			"sys:user:*",
-			"api:hello:get",
-		},
-		StandardClaims: jwt.StandardClaims{
-			NotBefore: time.Now().Unix(),           // 签名生效时间
-			ExpiresAt: time.Now().Unix() + 3600*24, // 过期时间 一天
-			Issuer:    "orca",                      //签名的发行者
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+type Token struct {
+	handler.Handler
 }
 
-func (t *Token) Refresh(claims security.JWTClaims) (string, error) {
-	j := security.NewJWT()
-	token, err := j.CreateToken(security.JWTClaims{
-		UserDetail: claims.UserDetail,
-		StandardClaims: jwt.StandardClaims{
-			NotBefore: time.Now().Unix(),           // 签名生效时间
-			ExpiresAt: time.Now().Unix() + 3600*24, // 过期时间 一天
-			Issuer:    "orca",                      //签名的发行者
-		},
-	})
+type LoginInfo struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+type TokenInfo struct {
+	Token string `json:"token"`
+	Type  string `json:"type,default=Bearer"`
+}
+
+func (t Token) Create(c *gin.Context) {
+	var loginInfo LoginInfo
+	err := t.MakeContext(c).Bind(&loginInfo).Errors
 	if err != nil {
-		return "", err
+		logger.Error(err.Error())
+		t.ResponseBusinessError(1, err.Error())
+		return
 	}
-	return token, nil
+	if err != nil {
+		t.ResponseBusinessError(1, err.Error())
+		return
+	}
+	t.Response(TokenInfo{Token: "", Type: "Bearer"})
+	return
+}
+
+func (t Token) Delete(c *gin.Context) {
+	t.MakeContext(c)
+	// JWT Token无需删除，客户端扔掉即可，因为它是短期的，服务端不需记录它
+	// 兼容后期Token加入Redis或者JWT Token加入Redis
+	t.ResponseOk()
+	return
+}
+
+// Refresh 刷新Token
+func (t Token) Refresh(context *gin.Context) {
+	t.MakeContext(context)
+	originalClaims, exists := t.Context.Get("original_claims")
+	if !exists {
+		t.ResponseBusinessError(1, "Token parsing failed.")
+		return
+	} else {
+		// 转换为JWTClaims
+		var _ = originalClaims.(*security.JWTClaims)
+
+		t.Response("")
+		return
+	}
+	return
 }

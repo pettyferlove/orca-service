@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"orca-service/application/api"
+	"orca-service/application/handler"
 	"orca-service/global/security/middleware"
 )
 
@@ -11,7 +11,7 @@ func init() {
 }
 
 func registerTokenRouter(group *gin.RouterGroup) {
-	token := api.Token{}
+	token := handler.Token{}
 	group.POST("/tokens", token.Create)
 	group.DELETE("/tokens", token.Delete)
 	group.POST("/tokens/refresh",
