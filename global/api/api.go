@@ -11,6 +11,7 @@ import (
 	log "orca-service/global/logger"
 	"orca-service/global/model"
 	"orca-service/global/util"
+	"time"
 )
 
 // Api 结构体用于处理 API 请求和响应
@@ -70,6 +71,7 @@ func (api *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
 // Response 方法用于发送一个成功的响应
 func (api *Api) Response(object any) {
 	api.Context.JSON(http.StatusOK, model.Response{
+		Timestamp:  time.Now().Unix(),
 		Code:       0,
 		Data:       object,
 		Successful: true,
@@ -79,6 +81,7 @@ func (api *Api) Response(object any) {
 // ResponseOk 方法用于发送一个成功的响应，但没有数据返回
 func (api *Api) ResponseOk() {
 	api.Context.JSON(http.StatusOK, model.Response{
+		Timestamp:  time.Now().Unix(),
 		Code:       0,
 		Data:       nil,
 		Successful: true,
@@ -88,6 +91,7 @@ func (api *Api) ResponseOk() {
 // ResponseMessage 方法用于发送一个成功的响应，但没有数据返回
 func (api *Api) ResponseMessage(message string) {
 	api.Context.JSON(http.StatusOK, model.Response{
+		Timestamp:  time.Now().Unix(),
 		Code:       0,
 		Message:    message,
 		Data:       nil,
@@ -98,6 +102,7 @@ func (api *Api) ResponseMessage(message string) {
 // ResponseBusinessError 方法用于发送一个业务错误的响应
 func (api *Api) ResponseBusinessError(code int, message string) {
 	api.Context.AbortWithStatusJSON(http.StatusOK, model.Response{
+		Timestamp:  time.Now().Unix(),
 		Code:       code,
 		Message:    message,
 		Data:       nil,
@@ -108,6 +113,7 @@ func (api *Api) ResponseBusinessError(code int, message string) {
 // ResponseError 方法用于发送一个错误的响应
 func (api *Api) ResponseError(code int, message string) {
 	api.Context.AbortWithStatusJSON(http.StatusInternalServerError, model.Response{
+		Timestamp:  time.Now().Unix(),
 		Code:       code,
 		Message:    message,
 		Data:       nil,
