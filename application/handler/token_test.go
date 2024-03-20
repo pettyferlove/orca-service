@@ -9,7 +9,7 @@ import (
 )
 
 func BenchmarkToken_Create(b *testing.B) {
-	loginInfo := LoginInfo{
+	loginInfo := LoginRequest{
 		Username: "administrator",
 		Password: "123456",
 	}
