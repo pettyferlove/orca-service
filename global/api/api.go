@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 	"net/http"
 	"orca-service/global"
@@ -19,6 +20,7 @@ type Api struct {
 	Context  *gin.Context
 	Errors   error
 	DataBase *gorm.DB
+	Redis    *redis.Client
 }
 
 // AddError 方法用于添加一个新的错误到 Api 结构体
@@ -35,6 +37,7 @@ func (api *Api) AddError(err error) {
 func (api *Api) MakeContext(c *gin.Context) *Api {
 	api.Context = c
 	api.DataBase = global.DatabaseClient.WithContext(c)
+	api.Redis = global.RedisClient
 	return api
 }
 
