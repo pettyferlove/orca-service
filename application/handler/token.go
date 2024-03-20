@@ -11,19 +11,19 @@ type Token struct {
 	handler.Handler
 }
 
-type LoginInfo struct {
+type LoginRequest struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
-type TokenInfo struct {
+type LoginResponse struct {
 	Token string `json:"token"`
 	Type  string `json:"type,default=Bearer"`
 }
 
 func (t Token) Create(c *gin.Context) {
-	var loginInfo LoginInfo
-	err := t.MakeContext(c).Bind(&loginInfo).Errors
+	var loginRequest LoginRequest
+	err := t.MakeContext(c).Bind(&loginRequest).Errors
 	if err != nil {
 		logger.Error(err.Error())
 		t.ResponseBusinessError(1, err.Error())
@@ -33,7 +33,7 @@ func (t Token) Create(c *gin.Context) {
 		t.ResponseBusinessError(1, err.Error())
 		return
 	}
-	t.Response(TokenInfo{Token: "", Type: "Bearer"})
+	t.Response(LoginResponse{Token: "", Type: "Bearer"})
 	return
 }
 
