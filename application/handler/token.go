@@ -53,8 +53,9 @@ func (t Token) Create(c *gin.Context) {
 	claims := security.JWTClaims{
 		UserDetail: model.UserDetail{
 			Id:       user.Id,
+			Username: user.Username,
+			Password: user.Password,
 			Avatar:   userInfo.Avatar,
-			Username: userInfo.Username,
 			Nickname: userInfo.Nickname,
 			Email:    userInfo.Email,
 			Phone:    userInfo.Phone,
@@ -108,5 +109,4 @@ func (t Token) Refresh(context *gin.Context) {
 		t.Response("")
 		return
 	}
-	return
 }
