@@ -41,7 +41,7 @@ func run() error {
 		log.Error("error parsing configuration file", err)
 	}
 
-	log.SetDefaultLoggerLevel(log.WarnLevel)
+	log.SetDefaultLoggerLevel(log.DebugLevel)
 
 	gin.SetMode(global.Config.Server.Mode)
 	r := gin.New()

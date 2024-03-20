@@ -2,8 +2,12 @@ package model
 
 type UserDetail struct {
 	Id       string `json:"id"`
-	UserName string `json:"user_name"`
-	NickName string `json:"nick_name"`
 	Avatar   string `json:"avatar"`
+	Username string `json:"username"`
+	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Channel  string `json:"channel"`
+	Tenant   string `json:"tenant"`
+	Status   int8   `json:"status"`
 }

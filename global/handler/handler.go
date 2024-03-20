@@ -123,3 +123,80 @@ func (api *Handler) ResponseError(code int, message string) {
 		Successful: false,
 	})
 }
+
+// ResponseNotFound 方法用于发送一个未找到的响应
+func (api *Handler) ResponseNotFound() {
+	api.Context.AbortWithStatusJSON(http.StatusNotFound, model.Response{
+		Timestamp:  time.Now().Unix(),
+		Code:       1,
+		Message:    "not found",
+		Data:       nil,
+		Successful: false,
+	})
+}
+
+// ResponseUnauthorized 方法用于发送一个未授权的响应
+func (api *Handler) ResponseUnauthorized() {
+	api.Context.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
+		Timestamp:  time.Now().Unix(),
+		Code:       2001,
+		Message:    "unauthorized",
+		Data:       nil,
+		Successful: false,
+	})
+}
+
+// ResponseUnauthorizedMessage 方法用于发送一个未授权的响应
+func (api *Handler) ResponseUnauthorizedMessage(message string) {
+	api.Context.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
+		Timestamp:  time.Now().Unix(),
+		Code:       2001,
+		Message:    message,
+		Data:       nil,
+		Successful: false,
+	})
+}
+
+// ResponseForbidden 方法用于发送一个禁止访问的响应
+func (api *Handler) ResponseForbidden() {
+	api.Context.AbortWithStatusJSON(http.StatusForbidden, model.Response{
+		Timestamp:  time.Now().Unix(),
+		Code:       4001,
+		Message:    "forbidden",
+		Data:       nil,
+		Successful: false,
+	})
+}
+
+// ResponseForbiddenMessage 方法用于发送一个禁止访问的响应
+func (api *Handler) ResponseForbiddenMessage(message string) {
+	api.Context.AbortWithStatusJSON(http.StatusForbidden, model.Response{
+		Timestamp:  time.Now().Unix(),
+		Code:       4001,
+		Message:    message,
+		Data:       nil,
+		Successful: false,
+	})
+}
+
+// ResponseBadRequest 方法用于发送一个错误的请求的响应
+func (api *Handler) ResponseBadRequest() {
+	api.Context.AbortWithStatusJSON(http.StatusBadRequest, model.Response{
+		Timestamp:  time.Now().Unix(),
+		Code:       9999,
+		Message:    "bad request",
+		Data:       nil,
+		Successful: false,
+	})
+}
+
+// ResponseBadRequestMessage 方法用于发送一个错误的请求的响应
+func (api *Handler) ResponseBadRequestMessage(message string) {
+	api.Context.AbortWithStatusJSON(http.StatusBadRequest, model.Response{
+		Timestamp:  time.Now().Unix(),
+		Code:       9999,
+		Message:    message,
+		Data:       nil,
+		Successful: false,
+	})
+}

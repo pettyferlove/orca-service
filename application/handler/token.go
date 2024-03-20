@@ -1,10 +1,14 @@
 package handler
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"orca-service/application/entity"
 	"orca-service/global/handler"
 	"orca-service/global/logger"
 	"orca-service/global/security"
+	"orca-service/global/security/model"
+	"time"
 )
 
 type Token struct {
@@ -33,7 +37,52 @@ func (t Token) Create(c *gin.Context) {
 		t.ResponseBusinessError(1, err.Error())
 		return
 	}
-	t.Response(LoginResponse{Token: "", Type: "Bearer"})
+	var user = entity.User{}
+	t.DataBase.Where("login_name = ? and deleted = false", loginRequest.Username).First(&user)
+	if user.Id == "" {
+		t.ResponseBadRequestMessage("User not found.")
+		return
+	}
+	var userInfo = entity.UserInfo{}
+	t.DataBase.Where("user_id = ? and deleted = false", user.Id).First(&userInfo)
+	if userInfo.Id == "" {
+		t.ResponseBadRequestMessage("User not found.")
+		return
+	}
+
+	claims := security.JWTClaims{
+		UserDetail: model.UserDetail{
+			Id:       user.Id,
+			Avatar:   userInfo.Avatar,
+			Username: userInfo.Username,
+			Nickname: userInfo.Nickname,
+			Email:    userInfo.Email,
+			Phone:    userInfo.Phone,
+			Channel:  user.Channel,
+			Tenant:   user.TenantId,
+			Status:   user.Status,
+		},
+		Roles: []string{
+			"ROLE_ADMIN",
+			"ROLE_USER",
+		},
+		Permissions: []string{
+			"sys:user:*",
+			"handler:hello:get",
+		},
+		StandardClaims: jwt.StandardClaims{
+			NotBefore: time.Now().Unix(),           // 签名生效时间
+			ExpiresAt: time.Now().Unix() + 3600*24, // 过期时间 一天
+			Issuer:    "orca",                      //签名的发行者
+		},
+	}
+	j := security.NewJWT()
+	token, err := j.CreateToken(claims)
+	if err != nil {
+		t.ResponseUnauthorizedMessage("Token creation failed.")
+		return
+	}
+	t.Response(LoginResponse{Token: token, Type: "Bearer"})
 	return
 }
 

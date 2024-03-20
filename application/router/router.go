@@ -14,7 +14,7 @@ var (
 func InitRouter(r *gin.Engine) {
 	r.NoRoute(NoRouteHandler)
 	r.GET("/ping", PingHandler)
-	group := r.Group("/handler/v1")
+	group := r.Group("/api/v1")
 	for _, f := range router {
 		f(group)
 	}
