@@ -5,8 +5,8 @@ import "time"
 type UserInfo struct {
 	Id       string    `gorm:"column:id;primaryKey;size:128;comment:数据ID"`
 	UserId   string    `gorm:"column:user_id;size:128;comment:用户ID"`
+	Name     string    `gorm:"column:name;size:128;comment:姓名"`
 	Nickname string    `gorm:"column:nickname;size:128;comment:用户昵称"`
-	FullName string    `gorm:"column:full_name;size:128;comment:姓名"`
 	Phone    string    `gorm:"column:phone;size:128;comment:手机号码"`
 	Gender   int8      `gorm:"column:gender;comment:性别"`
 	Birthday time.Time `gorm:"column:birthday;comment:生日"`
