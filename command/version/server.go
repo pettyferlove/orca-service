@@ -8,7 +8,7 @@ import (
 var (
 	Command = &cobra.Command{
 		Use:     "version",
-		Short:   "Get version info",
+		Short:   "Show version",
 		Example: "orca version",
 		PreRun: func(command *cobra.Command, args []string) {
 
