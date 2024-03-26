@@ -1,26 +1,89 @@
 package token
 
 import (
+	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 	"orca-service/global/security/model"
 	"testing"
 )
 
+var ctx = context.Background()
+
 func TestCreateAccessToken(t *testing.T) {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       1,  // use default DB
+		Addr: "localhost:6379",
 	})
 
 	store := NewRedisStore(rdb)
-	user := model.UserDetail{Username: "testUser", Password: "testPass"}
+	user := model.UserDetail{
+		Id:       "1",
+		Username: "testUser",
+		Email:    "test@example.com",
+	}
 
 	token, err := store.CreateAccessToken(user)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token)
 
-	// You can add more assertions here to check the state of the Redis store
-	// For example, you might want to check that the token was correctly stored in Redis
+	val, err := rdb.Get(ctx, store.authToAccessKeyPrefix+":"+token).Result()
+	assert.NoError(t, err)
+	assert.NotEmpty(t, val)
+}
+
+func TestRefreshAccessToken(t *testing.T) {
+	rdb := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	store := NewRedisStore(rdb)
+	user := model.UserDetail{
+		Id:       "1",
+		Username: "testUser",
+		Email:    "test@example.com",
+	}
+
+	token, _ := store.CreateAccessToken(user)
+	newToken, err := store.RefreshAccessToken(token)
+	assert.NoError(t, err)
+	assert.Equal(t, token, newToken)
+}
+
+func TestRemoveAccessToken(t *testing.T) {
+	rdb := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	store := NewRedisStore(rdb)
+	user := model.UserDetail{
+		Id:       "1",
+		Username: "testUser",
+		Email:    "test@example.com",
+	}
+
+	token, _ := store.CreateAccessToken(user)
+	err := store.RemoveAccessToken(user)
+	assert.NoError(t, err)
+
+	val, err := rdb.Get(ctx, store.authToAccessKeyPrefix+token).Result()
+	assert.Error(t, err)
+	assert.Equal(t, "", val)
+}
+
+func TestVerifyAccessToken(t *testing.T) {
+	rdb := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	store := NewRedisStore(rdb)
+	user := model.UserDetail{
+		Id:       "1",
+		Username: "testUser",
+		Email:    "test@example.com",
+	}
+
+	token, _ := store.CreateAccessToken(user)
+	userDetails, err := store.VerifyAccessToken(token)
+	assert.NoError(t, err)
+	assert.Equal(t, user.Username, userDetails.Username)
 }

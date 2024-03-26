@@ -11,15 +11,20 @@ import (
 )
 
 var (
-	authToAccessKeyPrefix          = "security:authorization:auth_to_access:"
-	usernameToAccessKeyPrefix      = "security:authorization:username_to_access:"
-	abnormalAccessKeyPrefix        = "security:authorization:abnormal_access:"
-	accessTokenValiditySeconds     = 60 * 60 * 24
-	accessTokenRefreshCriticalTime = 60 * 60 * 2
+	defaultAuthToAccessKeyPrefix          = "security:authorization:auth_to_access:"
+	defaultUsernameToAccessKeyPrefix      = "security:authorization:username_to_access:"
+	defaultAbnormalAccessKeyPrefix        = "security:authorization:abnormal_access:"
+	defaultAccessTokenValiditySeconds     = 60 * 60 * 24
+	defaultAccessTokenRefreshCriticalTime = 60 * 60 * 2
 )
 
 type RedisStore struct {
-	redis *redis.Client
+	redis                          *redis.Client
+	authToAccessKeyPrefix          string
+	usernameToAccessKeyPrefix      string
+	abnormalAccessKeyPrefix        string
+	accessTokenValiditySeconds     int
+	accessTokenRefreshCriticalTime int
 }
 
 type AuthenticationAbnormal struct {
@@ -29,45 +34,47 @@ type AuthenticationAbnormal struct {
 
 func NewRedisStore(redis *redis.Client) *RedisStore {
 	return &RedisStore{
-		redis: redis,
+		redis:                          redis,
+		authToAccessKeyPrefix:          defaultAuthToAccessKeyPrefix,
+		usernameToAccessKeyPrefix:      defaultUsernameToAccessKeyPrefix,
+		abnormalAccessKeyPrefix:        defaultAbnormalAccessKeyPrefix,
+		accessTokenValiditySeconds:     defaultAccessTokenValiditySeconds,
+		accessTokenRefreshCriticalTime: defaultAccessTokenRefreshCriticalTime,
 	}
 }
 
-func (r RedisStore) CreateAccessToken(user model.UserDetail) (string, error) {
+func (r *RedisStore) CreateAccessToken(user model.UserDetail) (string, error) {
 	username := user.Username
-
 	uuidObj, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
 	}
 	token := uuidObj.String()
-
 	serializedData, _ := json.Marshal(user)
-	err = r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, token), string(serializedData), time.Duration(accessTokenValiditySeconds)*time.Second).Err()
+	err = r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token), string(serializedData), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
 	if err != nil {
 		return "", err
 	}
 	// 判断是否单点登录
 	if !AllowMultiPoint {
-		oldToken, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, username)).Result()
+		oldToken, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, username)).Result()
 		if err == nil && oldToken != "" {
-			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, oldToken))
-			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, username))
+			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, oldToken))
+			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, username))
 
 			// 记录旧的token异常登录
-			abnormalObj := AuthenticationAbnormal{Message: "帐号在其他地方登录，您已被迫下线", Username: username}
+			abnormalObj := AuthenticationAbnormal{Message: "The account is logged in elsewhere and you have been forced offline", Username: username}
 			abnormalData, _ := json.Marshal(abnormalObj)
-			r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", abnormalAccessKeyPrefix, oldToken), string(abnormalData), time.Duration(accessTokenValiditySeconds)*time.Second)
+			r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, oldToken), string(abnormalData), time.Duration(r.accessTokenValiditySeconds)*time.Second)
 		}
 		// 将用户名和token绑定，用户检测重复登录
-		r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, username), token, time.Duration(accessTokenValiditySeconds)*time.Second)
+		r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, username), token, time.Duration(r.accessTokenValiditySeconds)*time.Second)
 	}
-
 	return token, nil
 }
 
-func (r RedisStore) RefreshAccessToken(token string) (string, error) {
-	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, token)).Result()
+func (r *RedisStore) RefreshAccessToken(token string) (string, error) {
+	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil {
 		return "", err
 	}
@@ -79,41 +86,41 @@ func (r RedisStore) RefreshAccessToken(token string) (string, error) {
 	}
 
 	serializedData, _ := json.Marshal(userDetailsObj)
-	err = r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, token), string(serializedData), time.Duration(accessTokenValiditySeconds)*time.Second).Err()
+	err = r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token), string(serializedData), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
 	if err != nil {
 		return "", err
 	}
 
-	err = r.redis.LPush(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, userDetailsObj.Username), token).Err()
+	err = r.redis.LPush(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), token).Err()
 	if err != nil {
 		return "", err
 	}
 
-	err = r.redis.Expire(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, userDetailsObj.Username), time.Duration(accessTokenValiditySeconds)*time.Second).Err()
-	return "", err
+	err = r.redis.Expire(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, userDetailsObj.Username), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
+	return token, err
 }
 
-func (r RedisStore) RemoveAccessToken(user model.UserDetail) error {
-	keys, err := r.redis.LRange(context.Background(), fmt.Sprintf("%s:%s", usernameToAccessKeyPrefix, user.Username), 0, -1).Result()
+func (r *RedisStore) RemoveAccessToken(user model.UserDetail) error {
+	keys, err := r.redis.LRange(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username), 0, -1).Result()
 	if err != nil {
 		return err
 	}
 	for _, key := range keys {
-		err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", abnormalAccessKeyPrefix, key)).Err()
+		err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, key)).Err()
 		if err != nil {
 			return err
 		}
 	}
-	err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", usernameToAccessKeyPrefix, user.Username)).Err()
+	err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username)).Err()
 	return err
 }
 
-func (r RedisStore) VerifyAccessToken(token string) (*model.UserDetail, error) {
-	duration, err := r.redis.TTL(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, token)).Result()
+func (r *RedisStore) VerifyAccessToken(token string) (*model.UserDetail, error) {
+	duration, err := r.redis.TTL(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil || duration.Seconds() <= 0 {
 		return nil, err
 	}
-	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", authToAccessKeyPrefix, token)).Result()
+	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -125,17 +132,17 @@ func (r RedisStore) VerifyAccessToken(token string) (*model.UserDetail, error) {
 	}
 	// 处理异常登录
 	if !AllowMultiPoint {
-		authAbnormal, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", abnormalAccessKeyPrefix, token)).Result()
+		authAbnormal, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, token)).Result()
 		if err == nil {
 			var authAbnormalObj AuthenticationAbnormal
 			err = json.Unmarshal([]byte(authAbnormal), &authAbnormalObj)
 			if err == nil {
-				r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", abnormalAccessKeyPrefix, token))
+				r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, token))
 				return nil, fmt.Errorf(authAbnormalObj.Message)
 			}
 		}
 	}
-	if duration < time.Duration(accessTokenRefreshCriticalTime)*time.Second {
+	if duration < time.Duration(r.accessTokenRefreshCriticalTime)*time.Second {
 		_, err := r.RefreshAccessToken(token)
 		if err != nil {
 			return nil, err
