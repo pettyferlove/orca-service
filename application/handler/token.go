@@ -34,41 +34,65 @@ func (t Token) Create(c *gin.Context) {
 		t.ResponseInvalidArgument(err.Error())
 		return
 	}
-	var user = entity.User{}
-	t.DataBase.Where("username = ?", loginRequest.Username).First(&user)
-	if user.Id == "" {
+	var userEntity = entity.User{}
+	tx := t.DataBase.Where("username = ?", loginRequest.Username).First(&userEntity)
+	if tx.Error != nil {
+		t.ResponseUnauthorizedMessage(tx.Error.Error())
+		return
+	}
+	if userEntity.Id == "" {
 		t.ResponseUnauthorizedMessage("User not found")
 		return
 	}
-	var userInfo = entity.UserInfo{}
-	t.DataBase.Where("user_id = ?", user.Id).First(&userInfo)
-	if userInfo.Id == "" {
+	var userInfoEntity = entity.UserInfo{}
+	tx = t.DataBase.Where("user_id = ?", userEntity.Id).First(&userInfoEntity)
+	if tx.Error != nil {
+		t.ResponseUnauthorizedMessage(tx.Error.Error())
+		return
+	}
+	if userInfoEntity.Id == "" {
 		t.ResponseUnauthorizedMessage("User not found")
 		return
 	}
+	// 查询角色列表
+	var roleEntities []entity.Role
+	tx = t.DataBase.Select("id", "role").Where("exists (select 1 from s_user_role where s_user_role.role_id = s_role.id and s_user_role.user_id = ?)", userEntity.Id).Find(&roleEntities)
+	if tx.Error != nil {
+		t.ResponseUnauthorizedMessage(tx.Error.Error())
+		return
+	}
+	var roles []string
+	var roleIds []string
+	for _, role := range roleEntities {
+		roleIds = append(roleIds, role.Id)
+		roles = append(roles, role.Role)
+	}
+	// 查询角色权限
+	var permissionEntities []entity.Permission
+	t.DataBase.Select("permission").Where("exists (select 1 from s_role_permission where s_role_permission.permission_id = s_permission.id and s_role_permission.role_id in ?)", roleIds).Find(&permissionEntities)
+
+	var permissions []string
+	for _, permission := range permissionEntities {
+		permissions = append(permissions, permission.Permission)
+	}
+
 	detail := model.UserDetail{
-		Id:       user.Id,
-		Username: user.Username,
-		Password: user.Password,
-		Avatar:   userInfo.Avatar,
-		Nickname: userInfo.Nickname,
-		Email:    userInfo.Email,
-		Phone:    userInfo.Phone,
-		Channel:  user.Channel,
-		Tenant:   user.TenantId,
-		Status:   user.Status,
-		Roles: []string{
-			"ROLE_ADMIN",
-			"ROLE_USER",
-		},
-		Permissions: []string{
-			"sys:user:*",
-			"handler:hello:get",
-		},
+		Id:          userEntity.Id,
+		Username:    userEntity.Username,
+		Password:    userEntity.Password,
+		Avatar:      userInfoEntity.Avatar,
+		Nickname:    userInfoEntity.Nickname,
+		Email:       userInfoEntity.Email,
+		Phone:       userInfoEntity.Phone,
+		Channel:     userEntity.Channel,
+		Tenant:      userEntity.TenantId,
+		Status:      userEntity.Status,
+		Roles:       roles,
+		Permissions: permissions,
 	}
 
 	// 使用BCrypt进行密码校验
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(userEntity.Password), []byte(loginRequest.Password))
 	if err != nil {
 		t.ResponseUnauthorizedMessage("Password error")
 		return
