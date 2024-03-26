@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"orca-service/application/entity"
 	"orca-service/global"
 	"orca-service/global/handler"
@@ -66,6 +67,12 @@ func (t Token) Create(c *gin.Context) {
 		},
 	}
 
+	// 使用BCrypt进行密码校验
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
+	if err != nil {
+		t.ResponseUnauthorizedMessage("Password error")
+		return
+	}
 	store := token.NewRedisStore(global.RedisClient)
 	accessToken, err := store.CreateAccessToken(detail)
 	if err != nil {
