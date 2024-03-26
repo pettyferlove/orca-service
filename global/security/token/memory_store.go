@@ -5,6 +5,10 @@ import "orca-service/global/security/model"
 type MemoryStore struct {
 }
 
+func NewMemoryStore() *MemoryStore {
+	return &MemoryStore{}
+}
+
 func (m MemoryStore) CreateAccessToken(user model.UserDetail) (string, error) {
 	return "", nil
 }

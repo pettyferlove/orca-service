@@ -2,6 +2,9 @@ package token
 
 import "orca-service/global/security/model"
 
+// AllowMultiPoint 变量，是否允许多点登录
+var AllowMultiPoint bool
+
 // Store token store
 type Store interface {
 

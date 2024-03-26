@@ -1,16 +1,19 @@
 package entity
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type User struct {
-	Id                string    `gorm:"column:id;primaryKey;size:128;comment:数据ID"`
-	Username          string    `gorm:"column:username;size:255;comment:用户名"`
-	Password          string    `gorm:"column:password;size:255;comment:登录密码"`
-	TenantId          string    `gorm:"column:tenant_id;size:128;comment:租户ID"`
-	Channel           string    `gorm:"column:channel;size:128;comment:渠道"`
-	Status            int8      `gorm:"column:status;comment:状态"`
-	LoginFail         int       `gorm:"column:login_fail;comment:登录失败次数"`
-	LastLoginFailTime time.Time `gorm:"column:last_login_fail_time;comment:最后登录失败时间"`
+	Username          string         `gorm:"column:username;size:255;comment:用户名"`
+	Password          string         `gorm:"column:password;size:255;comment:登录密码"`
+	TenantId          string         `gorm:"column:tenant_id;size:128;comment:租户ID"`
+	Channel           string         `gorm:"column:channel;size:128;comment:渠道"`
+	Status            int8           `gorm:"column:status;comment:状态"`
+	LoginFail         int            `gorm:"column:login_fail;comment:登录失败次数"`
+	LastLoginFailTime time.Time      `gorm:"column:last_login_fail_time;comment:最后登录失败时间"`
+	DeletedAt         gorm.DeletedAt `gorm:"index"`
 	BaseEntity
 }
 

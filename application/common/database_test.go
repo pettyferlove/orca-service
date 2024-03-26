@@ -90,14 +90,16 @@ func TestCreate(t *testing.T) {
 	db := global.DatabaseClient.WithContext(ctx)
 	test1 := uuid.New().String()
 	db.Create(&bm.User{
-		Id:                test1,
-		LoginName:         "test_1",
+		Username:          "test_1",
 		Password:          "123456",
 		TenantId:          "0000001",
 		Channel:           "test",
 		Status:            1,
 		LoginFail:         0,
 		LastLoginFailTime: time.Now(),
+		BaseEntity: bm.BaseEntity{
+			Id: test1,
+		},
 	})
 	// 查询
 	var user bm.User
@@ -112,14 +114,16 @@ func TestCreate(t *testing.T) {
 	var users []bm.User
 	for i := 0; i < 10; i++ {
 		users = append(users, bm.User{
-			Id:                uuid.New().String(),
-			LoginName:         "test_" + string(rune(i)),
+			Username:          "test_" + string(rune(i)),
 			Password:          "123456",
 			TenantId:          "0000001",
 			Channel:           "test",
 			Status:            1,
 			LoginFail:         0,
 			LastLoginFailTime: time.Now(),
+			BaseEntity: bm.BaseEntity{
+				Id: uuid.New().String(),
+			},
 		})
 	}
 	db.Create(&users)

@@ -76,36 +76,22 @@ func createAudit(db *gorm.DB) {
 	if data.Kind() == reflect.Slice {
 		for i := 0; i < data.Len(); i++ {
 			elem := data.Index(i)
-			field := elem.FieldByName("Creator")
+			field := elem.FieldByName("CreatedBy")
 			if field.IsValid() && field.CanSet() {
 				field.SetString(accountId)
 			}
-			field = elem.FieldByName("CreateTime")
-			if field.IsValid() && field.CanSet() {
-				field.Set(reflect.ValueOf(time.Now()))
-			}
-			field = elem.FieldByName("Modifier")
+			field = elem.FieldByName("UpdatedBy")
 			if field.IsValid() && field.CanSet() {
 				field.SetString(accountId)
-			}
-			field = elem.FieldByName("ModifyTime")
-			if field.IsValid() && field.CanSet() {
-				field.Set(reflect.ValueOf(time.Now()))
 			}
 		}
 		return
 	}
-	if db.Statement.Schema.LookUpField("Creator") != nil {
-		db.Statement.SetColumn("Creator", accountId, true)
+	if db.Statement.Schema.LookUpField("CreatedBy") != nil {
+		db.Statement.SetColumn("CreatedBy", accountId, true)
 	}
-	if db.Statement.Schema.LookUpField("CreateTime") != nil {
-		db.Statement.SetColumn("CreateTime", time.Now(), true)
-	}
-	if db.Statement.Schema.LookUpField("Modifier") != nil {
-		db.Statement.SetColumn("Modifier", accountId, true)
-	}
-	if db.Statement.Schema.LookUpField("ModifyTime") != nil {
-		db.Statement.SetColumn("ModifyTime", time.Now(), true)
+	if db.Statement.Schema.LookUpField("UpdatedBy") != nil {
+		db.Statement.SetColumn("UpdatedBy", accountId, true)
 	}
 }
 
@@ -115,21 +101,14 @@ func updateAudit(db *gorm.DB) {
 	if data.Kind() == reflect.Slice {
 		for i := 0; i < data.Len(); i++ {
 			elem := data.Index(i)
-			field := elem.FieldByName("Modifier")
+			field := elem.FieldByName("UpdatedBy")
 			if field.IsValid() && field.CanSet() {
 				field.SetString(accountId)
-			}
-			field = elem.FieldByName("ModifyTime")
-			if field.IsValid() && field.CanSet() {
-				field.Set(reflect.ValueOf(time.Now()))
 			}
 		}
 		return
 	}
-	if db.Statement.Schema.LookUpField("Modifier") != nil {
-		db.Statement.SetColumn("Modifier", accountId, true)
-	}
-	if db.Statement.Schema.LookUpField("ModifyTime") != nil {
-		db.Statement.SetColumn("ModifyTime", time.Now(), true)
+	if db.Statement.Schema.LookUpField("UpdatedBy") != nil {
+		db.Statement.SetColumn("UpdatedBy", accountId, true)
 	}
 }

@@ -3,6 +3,13 @@ package token
 import "orca-service/global/security/model"
 
 type JwtStore struct {
+	SigningKey []byte
+}
+
+func NewJwtStore() *JwtStore {
+	return &JwtStore{
+		[]byte("fpxt@GeZNUErvj!DXb7XMyeP_Mezhae9"),
+	}
 }
 
 func (j JwtStore) CreateAccessToken(user model.UserDetail) (string, error) {
