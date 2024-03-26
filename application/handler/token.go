@@ -30,23 +30,19 @@ func (t Token) Create(c *gin.Context) {
 	err := t.MakeContext(c).Bind(&loginRequest).Errors
 	if err != nil {
 		logger.Error(err.Error())
-		t.ResponseBusinessError(1, err.Error())
-		return
-	}
-	if err != nil {
-		t.ResponseBusinessError(1, err.Error())
+		t.ResponseInvalidArgument(err.Error())
 		return
 	}
 	var user = entity.User{}
-	t.DataBase.Where("login_name = ?", loginRequest.Username).First(&user)
+	t.DataBase.Where("username = ?", loginRequest.Username).First(&user)
 	if user.Id == "" {
-		t.ResponseUnauthorizedMessage("User not found.")
+		t.ResponseUnauthorizedMessage("User not found")
 		return
 	}
 	var userInfo = entity.UserInfo{}
 	t.DataBase.Where("user_id = ?", user.Id).First(&userInfo)
 	if userInfo.Id == "" {
-		t.ResponseUnauthorizedMessage("User not found.")
+		t.ResponseUnauthorizedMessage("User not found")
 		return
 	}
 	detail := model.UserDetail{
@@ -77,7 +73,7 @@ func (t Token) Create(c *gin.Context) {
 
 	}
 	if err != nil {
-		t.ResponseUnauthorizedMessage("Token creation failed.")
+		t.ResponseUnauthorizedMessage("Token creation failed")
 		return
 	}
 	t.Response(LoginResponse{Token: accessToken, Type: "Bearer"})
@@ -97,7 +93,7 @@ func (t Token) Refresh(context *gin.Context) {
 	t.MakeContext(context)
 	originalClaims, exists := t.Context.Get("original_claims")
 	if !exists {
-		t.ResponseBusinessError(1, "Token parsing failed.")
+		t.ResponseBusinessError(1, "Token parsing failed")
 		return
 	} else {
 		// 转换为JWTClaims

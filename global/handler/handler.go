@@ -75,7 +75,7 @@ func (api *Handler) Bind(d interface{}, bindings ...binding.Binding) *Handler {
 func (api *Handler) Response(object any) {
 	api.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       0,
+		Code:       int(Success),
 		Data:       object,
 		Successful: true,
 	})
@@ -85,7 +85,7 @@ func (api *Handler) Response(object any) {
 func (api *Handler) ResponseOk() {
 	api.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       0,
+		Code:       int(Success),
 		Data:       nil,
 		Successful: true,
 	})
@@ -95,7 +95,7 @@ func (api *Handler) ResponseOk() {
 func (api *Handler) ResponseMessage(message string) {
 	api.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       0,
+		Code:       int(Success),
 		Message:    message,
 		Data:       nil,
 		Successful: true,
@@ -124,12 +124,23 @@ func (api *Handler) ResponseError(code int, message string) {
 	})
 }
 
+// ResponseInvalidArgument 方法用于发送一个无效参数的响应
+func (api *Handler) ResponseInvalidArgument(message string) {
+	api.Context.AbortWithStatusJSON(http.StatusOK, model.Response{
+		Timestamp:  time.Now().Unix(),
+		Code:       int(InvalidArgument),
+		Message:    message,
+		Data:       nil,
+		Successful: false,
+	})
+}
+
 // ResponseNotFound 方法用于发送一个未找到的响应
 func (api *Handler) ResponseNotFound() {
 	api.Context.AbortWithStatusJSON(http.StatusNotFound, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       1,
-		Message:    "not found",
+		Code:       int(Failure),
+		Message:    "Not found",
 		Data:       nil,
 		Successful: false,
 	})
@@ -139,8 +150,8 @@ func (api *Handler) ResponseNotFound() {
 func (api *Handler) ResponseUnauthorized() {
 	api.Context.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       2001,
-		Message:    "unauthorized",
+		Code:       int(UserAuthenticateError),
+		Message:    "Unauthorized",
 		Data:       nil,
 		Successful: false,
 	})
@@ -150,7 +161,7 @@ func (api *Handler) ResponseUnauthorized() {
 func (api *Handler) ResponseUnauthorizedMessage(message string) {
 	api.Context.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       2001,
+		Code:       int(UserAuthenticateError),
 		Message:    message,
 		Data:       nil,
 		Successful: false,
@@ -161,8 +172,8 @@ func (api *Handler) ResponseUnauthorizedMessage(message string) {
 func (api *Handler) ResponseForbidden() {
 	api.Context.AbortWithStatusJSON(http.StatusForbidden, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       4001,
-		Message:    "forbidden",
+		Code:       int(PermissionNoAccess),
+		Message:    "Forbidden",
 		Data:       nil,
 		Successful: false,
 	})
@@ -172,7 +183,7 @@ func (api *Handler) ResponseForbidden() {
 func (api *Handler) ResponseForbiddenMessage(message string) {
 	api.Context.AbortWithStatusJSON(http.StatusForbidden, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       4001,
+		Code:       int(PermissionNoAccess),
 		Message:    message,
 		Data:       nil,
 		Successful: false,
@@ -183,8 +194,8 @@ func (api *Handler) ResponseForbiddenMessage(message string) {
 func (api *Handler) ResponseBadRequest() {
 	api.Context.AbortWithStatusJSON(http.StatusBadRequest, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       9999,
-		Message:    "bad request",
+		Code:       int(ServiceException),
+		Message:    "Bad request",
 		Data:       nil,
 		Successful: false,
 	})
@@ -194,7 +205,7 @@ func (api *Handler) ResponseBadRequest() {
 func (api *Handler) ResponseBadRequestMessage(message string) {
 	api.Context.AbortWithStatusJSON(http.StatusBadRequest, model.Response{
 		Timestamp:  time.Now().Unix(),
-		Code:       9999,
+		Code:       int(ServiceException),
 		Message:    message,
 		Data:       nil,
 		Successful: false,

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"orca-service/global"
+	"orca-service/global/handler"
 	"orca-service/global/model"
 )
 
@@ -14,8 +15,8 @@ func AccessControlMiddleware() gin.HandlerFunc {
 		service := "orca-service"
 		if !exists {
 			c.AbortWithStatusJSON(http.StatusForbidden, model.Response{
-				Code:       1,
-				Message:    "User roles are missing. Please assign roles to the user.",
+				Code:       int(handler.PermissionNoAccess),
+				Message:    "User roles are missing. Please assign roles to the user",
 				Successful: false,
 			})
 			return
@@ -36,8 +37,8 @@ func AccessControlMiddleware() gin.HandlerFunc {
 		}
 		if !hasRole {
 			c.AbortWithStatusJSON(http.StatusForbidden, model.Response{
-				Code:       1,
-				Message:    "You do not have the required roles to access this resource.",
+				Code:       int(handler.PermissionNoAccess),
+				Message:    "You do not have the required roles to access this resource",
 				Successful: false,
 			})
 			return
