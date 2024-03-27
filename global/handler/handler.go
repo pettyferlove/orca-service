@@ -11,6 +11,7 @@ import (
 	"orca-service/global"
 	log "orca-service/global/logger"
 	"orca-service/global/model"
+	"orca-service/global/service"
 	"orca-service/global/util"
 	"time"
 )
@@ -24,56 +25,63 @@ type Handler struct {
 }
 
 // AddError 方法用于添加一个新的错误到 Handler 结构体
-func (api *Handler) AddError(err error) {
-	if api.Errors == nil {
-		api.Errors = err
+func (handler *Handler) AddError(err error) {
+	if handler.Errors == nil {
+		handler.Errors = err
 	} else if err != nil {
 		log.Error("handler process error, error:%v", err)
-		api.Errors = fmt.Errorf("%v; %w", api.Errors, err)
+		handler.Errors = fmt.Errorf("%v; %w", handler.Errors, err)
 	}
 }
 
 // MakeContext 方法用于设置 Handler 结构体的上下文
-func (api *Handler) MakeContext(c *gin.Context) *Handler {
-	api.Context = c
-	api.DataBase = global.DatabaseClient.WithContext(c)
-	api.Redis = global.RedisClient
-	return api
+func (handler *Handler) MakeContext(c *gin.Context) *Handler {
+	handler.Context = c
+	handler.DataBase = global.DatabaseClient.WithContext(c)
+	handler.Redis = global.RedisClient
+	return handler
+}
+
+// MakeService 方法用于设置 Handler 结构体的服务
+func (handler *Handler) MakeService(service *service.Service) *Handler {
+	service.DataBase = handler.DataBase
+	service.Redis = handler.Redis
+	return handler
 }
 
 // Bind 方法用于绑定请求数据到指定的结构体
-func (api *Handler) Bind(d interface{}, bindings ...binding.Binding) *Handler {
+func (handler *Handler) Bind(d interface{}, bindings ...binding.Binding) *Handler {
 	var err error
 	if len(bindings) == 0 {
 		bindings = cache.GetBinding(d)
 	}
 	for i := range bindings {
 		if bindings[i] == nil {
-			err = api.Context.ShouldBindUri(d)
+			err = handler.Context.ShouldBindUri(d)
 		} else {
-			err = api.Context.ShouldBindWith(d, bindings[i])
+			err = handler.Context.ShouldBindWith(d, bindings[i])
 		}
 		if err != nil && err.Error() == "EOF" {
-			api.AddError(errors.New("request body is not present anymore. "))
+			handler.AddError(errors.New("request body is not present anymore. "))
 			break
 		}
 		if err != nil {
-			api.AddError(err)
+			handler.AddError(err)
 			break
 		}
 	}
 	if err == nil {
 		validate, s := util.Validate(d)
 		if !validate {
-			api.AddError(errors.New(s))
+			handler.AddError(errors.New(s))
 		}
 	}
-	return api
+	return handler
 }
 
 // Response 方法用于发送一个成功的响应
-func (api *Handler) Response(object any) {
-	api.Context.JSON(http.StatusOK, model.Response{
+func (handler *Handler) Response(object any) {
+	handler.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(Success),
 		Data:       object,
@@ -82,8 +90,8 @@ func (api *Handler) Response(object any) {
 }
 
 // ResponseOk 方法用于发送一个成功的响应，但没有数据返回
-func (api *Handler) ResponseOk() {
-	api.Context.JSON(http.StatusOK, model.Response{
+func (handler *Handler) ResponseOk() {
+	handler.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(Success),
 		Data:       nil,
@@ -92,8 +100,8 @@ func (api *Handler) ResponseOk() {
 }
 
 // ResponseMessage 方法用于发送一个成功的响应，但没有数据返回
-func (api *Handler) ResponseMessage(message string) {
-	api.Context.JSON(http.StatusOK, model.Response{
+func (handler *Handler) ResponseMessage(message string) {
+	handler.Context.JSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(Success),
 		Message:    message,
@@ -103,8 +111,8 @@ func (api *Handler) ResponseMessage(message string) {
 }
 
 // ResponseBusinessError 方法用于发送一个业务错误的响应
-func (api *Handler) ResponseBusinessError(code int, message string) {
-	api.Context.AbortWithStatusJSON(http.StatusOK, model.Response{
+func (handler *Handler) ResponseBusinessError(code int, message string) {
+	handler.Context.AbortWithStatusJSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       code,
 		Message:    message,
@@ -114,8 +122,8 @@ func (api *Handler) ResponseBusinessError(code int, message string) {
 }
 
 // ResponseError 方法用于发送一个错误的响应
-func (api *Handler) ResponseError(code int, message string) {
-	api.Context.AbortWithStatusJSON(http.StatusInternalServerError, model.Response{
+func (handler *Handler) ResponseError(code int, message string) {
+	handler.Context.AbortWithStatusJSON(http.StatusInternalServerError, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       code,
 		Message:    message,
@@ -125,8 +133,8 @@ func (api *Handler) ResponseError(code int, message string) {
 }
 
 // ResponseInvalidArgument 方法用于发送一个无效参数的响应
-func (api *Handler) ResponseInvalidArgument(message string) {
-	api.Context.AbortWithStatusJSON(http.StatusOK, model.Response{
+func (handler *Handler) ResponseInvalidArgument(message string) {
+	handler.Context.AbortWithStatusJSON(http.StatusOK, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(InvalidArgument),
 		Message:    message,
@@ -136,8 +144,8 @@ func (api *Handler) ResponseInvalidArgument(message string) {
 }
 
 // ResponseNotFound 方法用于发送一个未找到的响应
-func (api *Handler) ResponseNotFound() {
-	api.Context.AbortWithStatusJSON(http.StatusNotFound, model.Response{
+func (handler *Handler) ResponseNotFound() {
+	handler.Context.AbortWithStatusJSON(http.StatusNotFound, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(Failure),
 		Message:    "Not found",
@@ -147,8 +155,8 @@ func (api *Handler) ResponseNotFound() {
 }
 
 // ResponseUnauthorized 方法用于发送一个未授权的响应
-func (api *Handler) ResponseUnauthorized() {
-	api.Context.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
+func (handler *Handler) ResponseUnauthorized() {
+	handler.Context.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(UserAuthenticateError),
 		Message:    "Unauthorized",
@@ -158,8 +166,8 @@ func (api *Handler) ResponseUnauthorized() {
 }
 
 // ResponseUnauthorizedMessage 方法用于发送一个未授权的响应
-func (api *Handler) ResponseUnauthorizedMessage(message string) {
-	api.Context.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
+func (handler *Handler) ResponseUnauthorizedMessage(message string) {
+	handler.Context.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(UserAuthenticateError),
 		Message:    message,
@@ -169,8 +177,8 @@ func (api *Handler) ResponseUnauthorizedMessage(message string) {
 }
 
 // ResponseForbidden 方法用于发送一个禁止访问的响应
-func (api *Handler) ResponseForbidden() {
-	api.Context.AbortWithStatusJSON(http.StatusForbidden, model.Response{
+func (handler *Handler) ResponseForbidden() {
+	handler.Context.AbortWithStatusJSON(http.StatusForbidden, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(PermissionNoAccess),
 		Message:    "Forbidden",
@@ -180,8 +188,8 @@ func (api *Handler) ResponseForbidden() {
 }
 
 // ResponseForbiddenMessage 方法用于发送一个禁止访问的响应
-func (api *Handler) ResponseForbiddenMessage(message string) {
-	api.Context.AbortWithStatusJSON(http.StatusForbidden, model.Response{
+func (handler *Handler) ResponseForbiddenMessage(message string) {
+	handler.Context.AbortWithStatusJSON(http.StatusForbidden, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(PermissionNoAccess),
 		Message:    message,
@@ -191,8 +199,8 @@ func (api *Handler) ResponseForbiddenMessage(message string) {
 }
 
 // ResponseBadRequest 方法用于发送一个错误的请求的响应
-func (api *Handler) ResponseBadRequest() {
-	api.Context.AbortWithStatusJSON(http.StatusBadRequest, model.Response{
+func (handler *Handler) ResponseBadRequest() {
+	handler.Context.AbortWithStatusJSON(http.StatusBadRequest, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(ServiceException),
 		Message:    "Bad request",
@@ -202,8 +210,8 @@ func (api *Handler) ResponseBadRequest() {
 }
 
 // ResponseBadRequestMessage 方法用于发送一个错误的请求的响应
-func (api *Handler) ResponseBadRequestMessage(message string) {
-	api.Context.AbortWithStatusJSON(http.StatusBadRequest, model.Response{
+func (handler *Handler) ResponseBadRequestMessage(message string) {
+	handler.Context.AbortWithStatusJSON(http.StatusBadRequest, model.Response{
 		Timestamp:  time.Now().Unix(),
 		Code:       int(ServiceException),
 		Message:    message,
