@@ -2,14 +2,14 @@ package token
 
 import (
 	"github.com/stretchr/testify/assert"
-	"orca-service/global/security/model"
+	"orca-service/global/security"
 	"testing"
 	"time"
 )
 
 func TestMemoryStore(t *testing.T) {
 	store := NewMemoryStore()
-	user := model.UserDetail{
+	user := security.UserDetail{
 		Id:       "1",
 		Username: "testUser",
 		Email:    "test@example.com",
@@ -42,7 +42,7 @@ func TestMemoryStore(t *testing.T) {
 
 func TestMemoryStore_CleaningJob(t *testing.T) {
 	store := NewMemoryStore()
-	user := model.UserDetail{
+	user := security.UserDetail{
 		Id:       "1",
 		Username: "testUser",
 		Email:    "test@example.com",

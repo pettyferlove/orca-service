@@ -2,47 +2,47 @@ package util
 
 import (
 	"context"
+	"errors"
 	"orca-service/global/security"
-	"orca-service/global/security/model"
 )
 
-type key string
-
-const ContentKey key = "original_claims"
+const (
+	UserDetailKey string = "orca/user_detail"
+)
 
 // WithContext 将JWTClaims保存到context中
-func WithContext(ctx context.Context, claims *security.JWTClaims) context.Context {
-	return context.WithValue(ctx, ContentKey, claims)
+func WithContext(ctx context.Context, user *security.UserDetail) context.Context {
+	return context.WithValue(ctx, UserDetailKey, user)
 }
 
 // GetAccount 从上下文中获取用户信息
-func GetAccount(ctx context.Context) *model.UserDetail {
-	if v := ctx.Value(ContentKey); v != nil {
-		return &v.(*security.JWTClaims).UserDetail
+func GetAccount(ctx context.Context) (security.UserDetail, error) {
+	if v := ctx.Value(UserDetailKey); v != nil {
+		return v.(security.UserDetail), nil
 	}
-	return nil
+	return security.UserDetail{}, errors.New("user is not logged in")
 }
 
 // GetAccountId 从上下文中获取用户ID
 func GetAccountId(ctx context.Context) string {
-	if v := ctx.Value(ContentKey); v != nil {
-		return v.(*security.JWTClaims).UserDetail.Id
+	if v := ctx.Value(UserDetailKey); v != nil {
+		return v.(*security.UserDetail).Id
 	}
 	return "anonymous"
 }
 
 // GetRoles 从上下文中获取用户角色
 func GetRoles(ctx context.Context) []string {
-	if v := ctx.Value(ContentKey); v != nil {
-		return v.(*security.JWTClaims).Roles
+	if v := ctx.Value(UserDetailKey); v != nil {
+		return v.(*security.UserDetail).Roles
 	}
 	return []string{}
 }
 
 // GetPermissions 从上下文中获取用户权限
 func GetPermissions(ctx context.Context) []string {
-	if v := ctx.Value(ContentKey); v != nil {
-		return v.(*security.JWTClaims).Permissions
+	if v := ctx.Value(UserDetailKey); v != nil {
+		return v.(*security.UserDetail).Permissions
 	}
 	return []string{}
 }

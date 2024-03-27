@@ -3,7 +3,7 @@ package service
 import (
 	"orca-service/application/entity"
 	"orca-service/application/model"
-	user "orca-service/global/security/model"
+	user "orca-service/global/security"
 	"orca-service/global/service"
 	"time"
 )

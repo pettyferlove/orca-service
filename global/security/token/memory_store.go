@@ -3,7 +3,7 @@ package token
 import (
 	"errors"
 	"github.com/google/uuid"
-	"orca-service/global/security/model"
+	"orca-service/global/security"
 	"sync"
 	"time"
 )
@@ -13,7 +13,7 @@ type MemoryStore struct {
 }
 
 type tokenData struct {
-	user             model.UserDetail
+	user             security.UserDetail
 	lastActivityTime time.Time
 }
 
@@ -26,7 +26,7 @@ func NewMemoryStore() *MemoryStore {
 	return store
 }
 
-func (m *MemoryStore) CreateAccessToken(user model.UserDetail) (string, error) {
+func (m *MemoryStore) CreateAccessToken(user security.UserDetail) (string, error) {
 	uuidObj, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
@@ -45,7 +45,7 @@ func (m *MemoryStore) RefreshAccessToken(token string) (string, error) {
 	return token, nil
 }
 
-func (m *MemoryStore) RemoveAccessToken(user model.UserDetail) error {
+func (m *MemoryStore) RemoveAccessToken(user security.UserDetail) error {
 	m.data.Range(func(key, value interface{}) bool {
 		data := value.(*tokenData)
 		if data.user.GetId() == user.GetId() {
@@ -56,7 +56,7 @@ func (m *MemoryStore) RemoveAccessToken(user model.UserDetail) error {
 	return nil
 }
 
-func (m *MemoryStore) VerifyAccessToken(token string) (*model.UserDetail, error) {
+func (m *MemoryStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	value, ok := m.data.Load(token)
 	if !ok {
 		return nil, errors.New("invalid token")

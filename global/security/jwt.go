@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"orca-service/global/security/model"
 )
 
 type JWT struct {
@@ -19,9 +18,9 @@ func NewJWT() *JWT {
 }
 
 type JWTClaims struct {
-	model.UserDetail `json:"user_detail"`
-	Roles            []string `json:"roles"`
-	Permissions      []string `json:"permissions"`
+	UserDetail  `json:"user_detail"`
+	Roles       []string `json:"roles"`
+	Permissions []string `json:"permissions"`
 	jwt.StandardClaims
 }
 

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"orca-service/global/handler"
 	"orca-service/global/logger"
+	"orca-service/global/util"
 )
 
 type Hello struct {
@@ -13,6 +14,7 @@ type Hello struct {
 func (h Hello) Page(c *gin.Context) {
 	h.MakeContext(c)
 	logger.Info("hello page")
+	logger.Info("account:" + util.GetAccountId(c))
 	h.ResponseOk()
 	return
 }

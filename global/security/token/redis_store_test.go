@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
-	"orca-service/global/security/model"
+	"orca-service/global/security"
 	"testing"
 )
 
@@ -16,7 +16,7 @@ func TestCreateAccessToken(t *testing.T) {
 	})
 
 	store := NewRedisStore(rdb)
-	user := model.UserDetail{
+	user := security.UserDetail{
 		Id:       "1",
 		Username: "testUser",
 		Email:    "test@example.com",
@@ -37,7 +37,7 @@ func TestRefreshAccessToken(t *testing.T) {
 	})
 
 	store := NewRedisStore(rdb)
-	user := model.UserDetail{
+	user := security.UserDetail{
 		Id:       "1",
 		Username: "testUser",
 		Email:    "test@example.com",
@@ -55,7 +55,7 @@ func TestRemoveAccessToken(t *testing.T) {
 	})
 
 	store := NewRedisStore(rdb)
-	user := model.UserDetail{
+	user := security.UserDetail{
 		Id:       "1",
 		Username: "testUser",
 		Email:    "test@example.com",
@@ -76,7 +76,7 @@ func TestVerifyAccessToken(t *testing.T) {
 	})
 
 	store := NewRedisStore(rdb)
-	user := model.UserDetail{
+	user := security.UserDetail{
 		Id:       "1",
 		Username: "testUser",
 		Email:    "test@example.com",

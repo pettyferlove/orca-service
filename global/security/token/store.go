@@ -1,6 +1,8 @@
 package token
 
-import "orca-service/global/security/model"
+import (
+	"orca-service/global/security"
+)
 
 // AllowMultiPoint 变量，是否允许多点登录
 var AllowMultiPoint bool
@@ -9,14 +11,14 @@ var AllowMultiPoint bool
 type Store interface {
 
 	// CreateAccessToken create access token
-	CreateAccessToken(user model.UserDetail) (string, error)
+	CreateAccessToken(user security.UserDetail) (string, error)
 
 	// RefreshAccessToken refresh access token
 	RefreshAccessToken(token string) (string, error)
 
 	// RemoveAccessToken remove access token
-	RemoveAccessToken(user model.UserDetail) error
+	RemoveAccessToken(user security.UserDetail) error
 
 	// VerifyAccessToken verify access token
-	VerifyAccessToken(token string) (*model.UserDetail, error)
+	VerifyAccessToken(token string) (*security.UserDetail, error)
 }

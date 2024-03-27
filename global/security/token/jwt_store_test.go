@@ -2,7 +2,7 @@ package token
 
 import (
 	"github.com/stretchr/testify/assert"
-	"orca-service/global/security/model"
+	"orca-service/global/security"
 	"testing"
 	"time"
 )
@@ -11,7 +11,7 @@ func TestJwtStore(t *testing.T) {
 	key := []byte("your_secret_key")
 	store := NewJwtStore(key)
 
-	user := model.UserDetail{
+	user := security.UserDetail{
 		Id:       "1",
 		Username: "testUser",
 		Email:    "test@example.com",

@@ -1,4 +1,4 @@
-package model
+package security
 
 type UserStatus int8
 

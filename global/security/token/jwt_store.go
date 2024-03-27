@@ -6,7 +6,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	log "orca-service/global/logger"
 	"orca-service/global/security"
-	"orca-service/global/security/model"
 	"time"
 )
 
@@ -20,7 +19,7 @@ func NewJwtStore(key []byte) *JwtStore {
 	}
 }
 
-func (j *JwtStore) CreateAccessToken(user model.UserDetail) (string, error) {
+func (j *JwtStore) CreateAccessToken(user security.UserDetail) (string, error) {
 	roles := user.Roles
 	permissions := user.Permissions
 	user.Password = ""
@@ -53,12 +52,12 @@ func (j *JwtStore) RefreshAccessToken(token string) (string, error) {
 }
 
 // RemoveAccessToken remove access token，jwt无法撤销token，所以这里不做任何操作
-func (j *JwtStore) RemoveAccessToken(user model.UserDetail) error {
+func (j *JwtStore) RemoveAccessToken(user security.UserDetail) error {
 	log.Debug("Remove access token")
 	return nil
 }
 
-func (j *JwtStore) VerifyAccessToken(token string) (*model.UserDetail, error) {
+func (j *JwtStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	c, err := jwt.ParseWithClaims(token, &security.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.key, nil
 	})

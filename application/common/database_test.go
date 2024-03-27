@@ -7,7 +7,6 @@ import (
 	"orca-service/global"
 	"orca-service/global/config"
 	"orca-service/global/security"
-	"orca-service/global/security/model"
 	"orca-service/global/util"
 	"testing"
 	"time"
@@ -68,10 +67,8 @@ func TestCreate(t *testing.T) {
 		t.Errorf("Failed to initialize database: %v", err)
 	}
 
-	ctx = util.WithContext(ctx, &security.JWTClaims{
-		UserDetail: model.UserDetail{
-			Id: "0000001",
-		},
+	ctx = util.WithContext(ctx, &security.UserDetail{
+		Id: "0000001",
 		Roles: []string{
 			"ROLE_ADMIN",
 			"ROLE_USER",

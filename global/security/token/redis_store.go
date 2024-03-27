@@ -3,10 +3,11 @@ package token
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"orca-service/global/security/model"
+	"orca-service/global/security"
 	"time"
 )
 
@@ -43,17 +44,17 @@ func NewRedisStore(redis *redis.Client) *RedisStore {
 	}
 }
 
-func (r *RedisStore) CreateAccessToken(user model.UserDetail) (string, error) {
+func (r *RedisStore) CreateAccessToken(user security.UserDetail) (string, error) {
 	username := user.Username
 	uuidObj, err := uuid.NewRandom()
 	if err != nil {
-		return "", err
+		return "", errors.New("create token failed")
 	}
 	token := uuidObj.String()
 	serializedData, _ := json.Marshal(user)
 	err = r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token), string(serializedData), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
 	if err != nil {
-		return "", err
+		return "", errors.New("create token failed")
 	}
 	// 判断是否单点登录
 	if !AllowMultiPoint {
@@ -61,7 +62,6 @@ func (r *RedisStore) CreateAccessToken(user model.UserDetail) (string, error) {
 		if err == nil && oldToken != "" {
 			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, oldToken))
 			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, username))
-
 			// 记录旧的token异常登录
 			abnormalObj := AuthenticationAbnormal{Message: "The account is logged in elsewhere and you have been forced offline", Username: username}
 			abnormalData, _ := json.Marshal(abnormalObj)
@@ -76,59 +76,59 @@ func (r *RedisStore) CreateAccessToken(user model.UserDetail) (string, error) {
 func (r *RedisStore) RefreshAccessToken(token string) (string, error) {
 	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil {
-		return "", err
+		return "", errors.New("token is invalid")
 	}
 
-	var userDetailsObj model.UserDetail
+	var userDetailsObj security.UserDetail
 	err = json.Unmarshal([]byte(userDetails), &userDetailsObj)
 	if err != nil {
-		return "", err
+		return "", errors.New("token is invalid")
 	}
 
 	serializedData, _ := json.Marshal(userDetailsObj)
 	err = r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token), string(serializedData), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
 	if err != nil {
-		return "", err
+		return "", errors.New("token is invalid")
 	}
 
 	err = r.redis.LPush(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), token).Err()
 	if err != nil {
-		return "", err
+		return "", errors.New("token is invalid")
 	}
 
 	err = r.redis.Expire(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, userDetailsObj.Username), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
-	return token, err
+	return token, errors.New("token is invalid")
 }
 
-func (r *RedisStore) RemoveAccessToken(user model.UserDetail) error {
+func (r *RedisStore) RemoveAccessToken(user security.UserDetail) error {
 	keys, err := r.redis.LRange(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username), 0, -1).Result()
 	if err != nil {
-		return err
+		return errors.New("token is invalid")
 	}
 	for _, key := range keys {
 		err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, key)).Err()
 		if err != nil {
-			return err
+			return errors.New("token is invalid")
 		}
 	}
 	err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username)).Err()
-	return err
+	return errors.New("token is invalid")
 }
 
-func (r *RedisStore) VerifyAccessToken(token string) (*model.UserDetail, error) {
+func (r *RedisStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	duration, err := r.redis.TTL(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil || duration.Seconds() <= 0 {
-		return nil, err
+		return nil, errors.New("token is invalid")
 	}
 	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("token is invalid")
 	}
 	// 数据反序列化为UserDetails结构体
-	var userDetailsObj model.UserDetail
+	var userDetailsObj security.UserDetail
 	err = json.Unmarshal([]byte(userDetails), &userDetailsObj)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("token is invalid")
 	}
 	// 处理异常登录
 	if !AllowMultiPoint {
