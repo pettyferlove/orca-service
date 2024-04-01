@@ -23,11 +23,11 @@ func (h Hello) Get(c *gin.Context) {
 	h.MakeContext(c)
 	id := c.Param("id")
 	//global.Enforcer.AddNamedPolicies("p", [][]string{
-	//	{"000001", "ROLE_USER", "/handler/v1/hello/page", "GET", "orca-service", "allow"},
-	//	{"000001", "ROLE_USER", "/handler/v1/hello/:id", "GET", "orca-service", "allow"},
-	//	{"000001", "ROLE_USER", "/handler/v1/hello", "POST", "orca-service", "allow"},
-	//	{"000001", "ROLE_USER", "/handler/v1/hello/:id", "PUT", "orca-service", "allow"},
-	//	{"000001", "ROLE_USER", "/handler/v1/hello/:id", "DELETE", "orca-service", "allow"},
+	//	{"000001", "ROLE_USER", "/api/v1/hello/page", "GET", "orca-service", "allow"},
+	//	{"000001", "ROLE_USER", "/api/v1/hello/:id", "GET", "orca-service", "allow"},
+	//	{"000001", "ROLE_USER", "/api/v1/hello", "POST", "orca-service", "allow"},
+	//	{"000001", "ROLE_USER", "/api/v1/hello/:id", "PUT", "orca-service", "allow"},
+	//	{"000001", "ROLE_USER", "/api/v1/hello/:id", "DELETE", "orca-service", "allow"},
 	//})
 	logger.Info("hello get id:" + id)
 	h.ResponseOk()

@@ -15,7 +15,7 @@ func registerHelloRouter(group *gin.RouterGroup) {
 	hello := handler.Hello{}
 	helloGroup := group.Group("/hello",
 		middleware.AuthenticationMiddleware(),
-		//middleware.AccessControlMiddleware(),
+		middleware.AccessControlMiddleware(),
 	)
 	helloGroup.GET("/page", hello.Page)
 	helloGroup.GET("/:id", hello.Get)

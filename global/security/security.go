@@ -48,7 +48,7 @@ func InitSecurityEngine() error {
 	if err != nil {
 		panic(err)
 	}
-	enforcer.EnableLog(false)
+	enforcer.EnableLog(true)
 	global.Enforcer = enforcer
 	return nil
 }

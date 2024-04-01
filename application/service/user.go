@@ -48,6 +48,7 @@ func (u *User) LoadUserByUsername(username string) *user.UserDetail {
 	for _, permission := range permissionEntities {
 		permissions = append(permissions, permission.Permission)
 	}
+	roles = append(roles, "ROLE_USER")
 	detail := user.UserDetail{
 		Id:          userEntity.Id,
 		Username:    userEntity.Username,
