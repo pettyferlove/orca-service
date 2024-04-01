@@ -7,7 +7,6 @@ import (
 
 func init() {
 	router = append(router, registerUserRouter)
-
 }
 
 func registerUserRouter(group *gin.RouterGroup) {

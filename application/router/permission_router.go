@@ -7,7 +7,6 @@ import (
 
 func init() {
 	router = append(router, registerPermissionRouter)
-
 }
 
 func registerPermissionRouter(group *gin.RouterGroup) {
