@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	defaultAllowMultiPoint                = false
 	defaultAuthToAccessKeyPrefix          = "security:authorization:auth_to_access:"
 	defaultUsernameToAccessKeyPrefix      = "security:authorization:username_to_access:"
 	defaultAbnormalAccessKeyPrefix        = "security:authorization:abnormal_access:"
@@ -21,6 +22,7 @@ var (
 
 type RedisStore struct {
 	redis                          *redis.Client
+	allowMultiPoint                bool
 	authToAccessKeyPrefix          string
 	usernameToAccessKeyPrefix      string
 	abnormalAccessKeyPrefix        string
@@ -36,6 +38,7 @@ type AuthenticationAbnormal struct {
 func NewRedisStore(redis *redis.Client) *RedisStore {
 	return &RedisStore{
 		redis:                          redis,
+		allowMultiPoint:                false,
 		authToAccessKeyPrefix:          defaultAuthToAccessKeyPrefix,
 		usernameToAccessKeyPrefix:      defaultUsernameToAccessKeyPrefix,
 		abnormalAccessKeyPrefix:        defaultAbnormalAccessKeyPrefix,
@@ -45,7 +48,7 @@ func NewRedisStore(redis *redis.Client) *RedisStore {
 }
 
 func (r *RedisStore) SetAllowMultiPoint(allowMultiPoint bool) *RedisStore {
-	AllowMultiPoint = allowMultiPoint
+	r.allowMultiPoint = allowMultiPoint
 	return r
 }
 
@@ -62,7 +65,7 @@ func (r *RedisStore) CreateAccessToken(user security.UserDetail) (string, error)
 		return "", errors.New("创建令牌失败")
 	}
 	// 判断是否单点登录
-	if !AllowMultiPoint {
+	if !r.allowMultiPoint {
 		oldToken, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, username)).Result()
 		if err == nil && oldToken != "" {
 			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, oldToken))
@@ -129,7 +132,7 @@ func (r *RedisStore) VerifyAccessToken(token string) (*security.UserDetail, erro
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return nil, errors.New("令牌无效")
 	}
-	if errors.Is(err, redis.Nil) && !AllowMultiPoint {
+	if errors.Is(err, redis.Nil) && !r.allowMultiPoint {
 		// 处理异常登录
 		authAbnormal, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, token)).Result()
 		if err == nil {
