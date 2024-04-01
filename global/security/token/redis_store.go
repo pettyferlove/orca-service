@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	defaultAllowMultiPoint                = false
 	defaultAuthToAccessKeyPrefix          = "security:authorization:auth_to_access:"
 	defaultUsernameToAccessKeyPrefix      = "security:authorization:username_to_access:"
 	defaultAbnormalAccessKeyPrefix        = "security:authorization:abnormal_access:"
