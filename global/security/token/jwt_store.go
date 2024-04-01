@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+// JwtStore jwt存储
+// 令牌存储在jwt中，支持分布式部署
+// 令牌过期时间为1天
+// 令牌无法撤销
 type JwtStore struct {
 	key []byte
 }

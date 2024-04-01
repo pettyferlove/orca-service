@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+// MemoryStore 内存存储令牌
+// 令牌存储在内存中，不支持分布式部署
+// 令牌过期时间为1小时
 type MemoryStore struct {
 	data sync.Map
 }

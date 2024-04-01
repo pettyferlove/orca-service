@@ -19,6 +19,10 @@ var (
 	defaultAccessTokenRefreshCriticalTime = 60 * 5
 )
 
+// RedisStore redis存储
+// 令牌存储在redis中，支持分布式部署
+// 令牌过期时间为30分钟，刷新时间为5分钟（即30分钟后的5分钟内刷新）
+// 支持单点登录与多点登录
 type RedisStore struct {
 	redis                          *redis.Client
 	allowMultiPoint                bool
