@@ -19,7 +19,7 @@ func WithContext(ctx context.Context, user *security.UserDetail) context.Context
 // GetAccount 从上下文中获取用户信息
 func GetAccount(ctx context.Context) (security.UserDetail, error) {
 	if v := ctx.Value(UserDetailKey); v != nil {
-		return v.(security.UserDetail), nil
+		return *v.(*security.UserDetail), nil
 	}
 	return security.UserDetail{}, errors.New("user is not logged in")
 }

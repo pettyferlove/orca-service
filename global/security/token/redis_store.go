@@ -112,18 +112,22 @@ func (r *RedisStore) RefreshAccessToken(token string) (string, error) {
 }
 
 func (r *RedisStore) RemoveAccessToken(user security.UserDetail) error {
-	keys, err := r.redis.LRange(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username), 0, -1).Result()
-	if err != nil {
-		return errors.New("令牌无效")
-	}
-	for _, key := range keys {
-		err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, key)).Err()
+	if !r.allowMultiPoint {
+		keys, err := r.redis.LRange(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username), 0, -1).Result()
 		if err != nil {
 			return errors.New("令牌无效")
 		}
+		for _, key := range keys {
+			err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, key)).Err()
+			if err != nil {
+				return errors.New("令牌无效")
+			}
+		}
+		err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username)).Err()
+		return errors.New("令牌无效")
+	} else {
+		return nil
 	}
-	err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username)).Err()
-	return errors.New("令牌无效")
 }
 
 func (r *RedisStore) VerifyAccessToken(token string) (*security.UserDetail, error) {

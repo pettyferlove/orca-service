@@ -13,9 +13,6 @@ func init() {
 func registerTokenRouter(group *gin.RouterGroup) {
 	token := handler.Token{}
 	group.POST("/tokens", token.Create)
-	group.DELETE("/tokens", token.Delete)
-	group.POST("/tokens/refresh",
-		middleware.AuthenticationMiddleware(),
-		token.Refresh,
-	)
+	group.DELETE("/tokens", middleware.AuthenticationMiddleware(), token.Delete)
+	group.POST("/tokens/refresh", middleware.AuthenticationMiddleware(), token.Refresh)
 }

@@ -103,8 +103,17 @@ func (t Token) Create(c *gin.Context) {
 
 func (t Token) Delete(c *gin.Context) {
 	t.MakeContext(c)
-	// JWT Token无需删除，客户端扔掉即可，因为它是短期的，服务端不需记录它
-	// 兼容后期Token加入Redis或者JWT Token加入Redis
+	detail, err := util.GetAccount(c)
+	if err != nil {
+		t.ResponseUnauthorizedMessage("凭据不存在")
+		return
+	}
+	store := token.GetStore()
+	err = store.RemoveAccessToken(detail)
+	if err != nil {
+		t.ResponseUnauthorizedMessage("凭据删除失败")
+		return
+	}
 	t.ResponseOk()
 	return
 }
