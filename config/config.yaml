@@ -27,7 +27,7 @@ kubernetes:
 security:
   password-encrypt: false
   encrypt-key: ""
-  multi-login: true
+  multi-login: false
   login-attempt:
     enable: true
     times-before-lock: 5
