@@ -145,8 +145,3 @@ func (u *User) LockUser(username string) error {
 		return nil
 	}
 }
-
-// CheckLoginAttempts 方法用于检查登录尝试次数
-func (u *User) CheckLoginAttempts(username string) {
-	// 业务逻辑
-}
