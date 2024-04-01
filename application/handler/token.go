@@ -117,7 +117,7 @@ func (t Token) Refresh(context *gin.Context) {
 		t.ResponseUnauthorizedMessage("凭据不存在")
 		return
 	} else {
-		store := token.NewRedisStore(global.RedisClient)
+		store := token.GetStore()
 		accessToken, err := store.RefreshAccessToken(oldToken.(string))
 		if err != nil {
 			return

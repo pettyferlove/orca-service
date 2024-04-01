@@ -15,8 +15,8 @@ var (
 	defaultAuthToAccessKeyPrefix          = "security:authorization:auth_to_access:"
 	defaultUsernameToAccessKeyPrefix      = "security:authorization:username_to_access:"
 	defaultAbnormalAccessKeyPrefix        = "security:authorization:abnormal_access:"
-	defaultAccessTokenValiditySeconds     = 60 * 60 * 24
-	defaultAccessTokenRefreshCriticalTime = 60 * 60 * 2
+	defaultAccessTokenValiditySeconds     = 60 * 30
+	defaultAccessTokenRefreshCriticalTime = 60 * 5
 )
 
 type RedisStore struct {
@@ -98,13 +98,17 @@ func (r *RedisStore) RefreshAccessToken(token string) (string, error) {
 		return "", errors.New("令牌无效")
 	}
 
-	err = r.redis.LPush(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), token).Err()
-	if err != nil {
-		return "", errors.New("令牌无效")
-	}
+	if !r.allowMultiPoint {
+		err = r.redis.LPush(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), token).Err()
+		if err != nil {
+			return "", errors.New("令牌无效")
+		}
 
-	err = r.redis.Expire(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
-	return token, errors.New("令牌无效")
+		err = r.redis.Expire(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
+		return token, errors.New("令牌无效")
+	} else {
+		return token, nil
+	}
 }
 
 func (r *RedisStore) RemoveAccessToken(user security.UserDetail) error {
