@@ -36,8 +36,7 @@ func (t Token) Create(c *gin.Context) {
 	}
 	userDetail := userService.LoadUserByUsername(loginRequest.Username)
 	if userService.Errors != nil {
-		logger.Error(userService.Errors.Error())
-		t.ResponseUnauthorizedMessage("用户不存在")
+		t.ResponseUnauthorizedMessage("用户名或密码错误")
 		return
 	}
 	// 使用BCrypt进行密码校验
