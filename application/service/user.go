@@ -31,7 +31,7 @@ func (u *User) LoadUserByUsername(username string) *user.UserDetail {
 		u.AddError(err)
 		return nil
 	}
-	var roles []string
+	var roles = make([]string, 0)
 	var roleIds []string
 	for _, role := range roleEntities {
 		roleIds = append(roleIds, role.Id)
@@ -44,7 +44,7 @@ func (u *User) LoadUserByUsername(username string) *user.UserDetail {
 		return nil
 
 	}
-	var permissions []string
+	var permissions = make([]string, 0)
 	for _, permission := range permissionEntities {
 		permissions = append(permissions, permission.Permission)
 	}

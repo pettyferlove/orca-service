@@ -24,7 +24,7 @@ func AuthenticationMiddleware() gin.HandlerFunc {
 			})
 			return
 		}
-		s := store.NewRedisStore(global.RedisClient)
+		s := store.NewRedisStore(global.RedisClient).SetAllowMultiPoint(global.Config.Security.MultiLogin)
 		detail, err := s.VerifyAccessToken(token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{

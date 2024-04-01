@@ -44,31 +44,36 @@ func NewRedisStore(redis *redis.Client) *RedisStore {
 	}
 }
 
+func (r *RedisStore) SetAllowMultiPoint(allowMultiPoint bool) *RedisStore {
+	AllowMultiPoint = allowMultiPoint
+	return r
+}
+
 func (r *RedisStore) CreateAccessToken(user security.UserDetail) (string, error) {
 	username := user.Username
 	uuidObj, err := uuid.NewRandom()
 	if err != nil {
-		return "", errors.New("create token failed")
+		return "", errors.New("创建令牌失败")
 	}
 	token := uuidObj.String()
 	serializedData, _ := json.Marshal(user)
 	err = r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token), string(serializedData), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
 	if err != nil {
-		return "", errors.New("create token failed")
+		return "", errors.New("创建令牌失败")
 	}
 	// 判断是否单点登录
 	if !AllowMultiPoint {
-		oldToken, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, username)).Result()
+		oldToken, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, username)).Result()
 		if err == nil && oldToken != "" {
 			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, oldToken))
-			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, username))
+			r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, username))
 			// 记录旧的token异常登录
-			abnormalObj := AuthenticationAbnormal{Message: "The account is logged in elsewhere and you have been forced offline", Username: username}
+			abnormalObj := AuthenticationAbnormal{Message: "该帐号已在其他地方登录，您已被强制下线", Username: username}
 			abnormalData, _ := json.Marshal(abnormalObj)
 			r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, oldToken), string(abnormalData), time.Duration(r.accessTokenValiditySeconds)*time.Second)
 		}
 		// 将用户名和token绑定，用户检测重复登录
-		r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, username), token, time.Duration(r.accessTokenValiditySeconds)*time.Second)
+		r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, username), token, time.Duration(r.accessTokenValiditySeconds)*time.Second)
 	}
 	return token, nil
 }
@@ -96,7 +101,7 @@ func (r *RedisStore) RefreshAccessToken(token string) (string, error) {
 		return "", errors.New("令牌无效")
 	}
 
-	err = r.redis.Expire(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, userDetailsObj.Username), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
+	err = r.redis.Expire(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
 	return token, errors.New("令牌无效")
 }
 
@@ -117,21 +122,15 @@ func (r *RedisStore) RemoveAccessToken(user security.UserDetail) error {
 
 func (r *RedisStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	duration, err := r.redis.TTL(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
-	if err != nil || duration.Seconds() <= 0 {
+	if err != nil {
 		return nil, errors.New("令牌无效")
 	}
 	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
-	if err != nil {
+	if err != nil && !errors.Is(err, redis.Nil) {
 		return nil, errors.New("令牌无效")
 	}
-	// 数据反序列化为UserDetails结构体
-	var userDetailsObj security.UserDetail
-	err = json.Unmarshal([]byte(userDetails), &userDetailsObj)
-	if err != nil {
-		return nil, errors.New("令牌无效")
-	}
-	// 处理异常登录
-	if !AllowMultiPoint {
+	if errors.Is(err, redis.Nil) && !AllowMultiPoint {
+		// 处理异常登录
 		authAbnormal, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, token)).Result()
 		if err == nil {
 			var authAbnormalObj AuthenticationAbnormal
@@ -141,6 +140,12 @@ func (r *RedisStore) VerifyAccessToken(token string) (*security.UserDetail, erro
 				return nil, fmt.Errorf(authAbnormalObj.Message)
 			}
 		}
+	}
+	// 数据反序列化为UserDetails结构体
+	var userDetailsObj security.UserDetail
+	err = json.Unmarshal([]byte(userDetails), &userDetailsObj)
+	if err != nil {
+		return nil, errors.New("令牌无效")
 	}
 	if duration < time.Duration(r.accessTokenRefreshCriticalTime)*time.Second {
 		_, err := r.RefreshAccessToken(token)
