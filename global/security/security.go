@@ -10,10 +10,10 @@ import (
 
 var text = `
 [request_definition]
-r = tenant, subject, object, action, service
+r = subject, object, action, service
 
 [policy_definition]
-p = tenant, subject, object, action, service, effect
+p = subject, object, action, service, effect
 
 [role_definition]
 g = _, _
@@ -22,7 +22,7 @@ g = _, _
 e = priority(p.effect) || deny
 
 [matchers]
-m = r.tenant == p.tenant && g(r.subject, p.subject) && keyMatch(r.object, p.object) && (r.action == p.action || p.action == "*") && (r.service == p.service || p.service == "*")
+m = g(r.subject, p.subject) && keyMatch(r.object, p.object) && (r.action == p.action || p.action == "*") && (r.service == p.service || p.service == "*")
 `
 
 func InitSecurityEngine() error {
