@@ -16,7 +16,7 @@ func AccessControlMiddleware() gin.HandlerFunc {
 		if !exists {
 			c.AbortWithStatusJSON(http.StatusForbidden, model.Response{
 				Code:       int(handler.PermissionNoAccess),
-				Message:    "User roles are missing. Please assign roles to the user",
+				Message:    "未授权访问",
 				Successful: false,
 			})
 			return
@@ -38,7 +38,7 @@ func AccessControlMiddleware() gin.HandlerFunc {
 		if !hasRole {
 			c.AbortWithStatusJSON(http.StatusForbidden, model.Response{
 				Code:       int(handler.PermissionNoAccess),
-				Message:    "You do not have the required roles to access this resource",
+				Message:    "未授权访问",
 				Successful: false,
 			})
 			return

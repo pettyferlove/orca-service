@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	UserDetailKey string = "orca/user_detail"
+	UserDetailKey  string = "orca/user_detail"
+	AccessTokenKey string = "orca/access_token"
 )
 
 // WithContext 将JWTClaims保存到context中

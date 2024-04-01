@@ -76,59 +76,59 @@ func (r *RedisStore) CreateAccessToken(user security.UserDetail) (string, error)
 func (r *RedisStore) RefreshAccessToken(token string) (string, error) {
 	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil {
-		return "", errors.New("token is invalid")
+		return "", errors.New("令牌无效")
 	}
 
 	var userDetailsObj security.UserDetail
 	err = json.Unmarshal([]byte(userDetails), &userDetailsObj)
 	if err != nil {
-		return "", errors.New("token is invalid")
+		return "", errors.New("令牌无效")
 	}
 
 	serializedData, _ := json.Marshal(userDetailsObj)
 	err = r.redis.Set(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token), string(serializedData), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
 	if err != nil {
-		return "", errors.New("token is invalid")
+		return "", errors.New("令牌无效")
 	}
 
 	err = r.redis.LPush(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), token).Err()
 	if err != nil {
-		return "", errors.New("token is invalid")
+		return "", errors.New("令牌无效")
 	}
 
 	err = r.redis.Expire(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, userDetailsObj.Username), time.Duration(r.accessTokenValiditySeconds)*time.Second).Err()
-	return token, errors.New("token is invalid")
+	return token, errors.New("令牌无效")
 }
 
 func (r *RedisStore) RemoveAccessToken(user security.UserDetail) error {
 	keys, err := r.redis.LRange(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username), 0, -1).Result()
 	if err != nil {
-		return errors.New("token is invalid")
+		return errors.New("令牌无效")
 	}
 	for _, key := range keys {
 		err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.abnormalAccessKeyPrefix, key)).Err()
 		if err != nil {
-			return errors.New("token is invalid")
+			return errors.New("令牌无效")
 		}
 	}
 	err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username)).Err()
-	return errors.New("token is invalid")
+	return errors.New("令牌无效")
 }
 
 func (r *RedisStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	duration, err := r.redis.TTL(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil || duration.Seconds() <= 0 {
-		return nil, errors.New("token is invalid")
+		return nil, errors.New("令牌无效")
 	}
 	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil {
-		return nil, errors.New("token is invalid")
+		return nil, errors.New("令牌无效")
 	}
 	// 数据反序列化为UserDetails结构体
 	var userDetailsObj security.UserDetail
 	err = json.Unmarshal([]byte(userDetails), &userDetailsObj)
 	if err != nil {
-		return nil, errors.New("token is invalid")
+		return nil, errors.New("令牌无效")
 	}
 	// 处理异常登录
 	if !AllowMultiPoint {

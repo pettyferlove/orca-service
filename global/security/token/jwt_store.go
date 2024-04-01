@@ -48,7 +48,7 @@ func (j *JwtStore) RefreshAccessToken(token string) (string, error) {
 	if user != nil {
 		return j.CreateAccessToken(*user)
 	}
-	return "", errors.New("token is not available")
+	return "", errors.New("令牌不可用")
 }
 
 // RemoveAccessToken remove access token，jwt无法撤销token，所以这里不做任何操作
@@ -65,13 +65,13 @@ func (j *JwtStore) VerifyAccessToken(token string) (*security.UserDetail, error)
 		var ve *jwt.ValidationError
 		if errors.As(err, &ve) {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return nil, fmt.Errorf("token is not available")
+				return nil, fmt.Errorf("令牌不可用")
 			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				return nil, fmt.Errorf("token expires")
+				return nil, fmt.Errorf("令牌过期")
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
-				return nil, fmt.Errorf("invalid token")
+				return nil, fmt.Errorf("令牌无效")
 			} else {
-				return nil, fmt.Errorf("token is not available")
+				return nil, fmt.Errorf("令牌不可用")
 			}
 
 		}

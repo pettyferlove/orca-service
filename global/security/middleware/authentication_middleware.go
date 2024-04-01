@@ -18,7 +18,7 @@ func AuthenticationMiddleware() gin.HandlerFunc {
 		if token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{
 				Code:       int(handler.UserAuthenticateError),
-				Message:    "The request does not carry a token and there is no access permission",
+				Message:    "无访问权限",
 				Data:       nil,
 				Successful: false,
 			})
@@ -36,6 +36,7 @@ func AuthenticationMiddleware() gin.HandlerFunc {
 			return
 		}
 		c.Set(util.UserDetailKey, detail)
+		c.Set(util.AccessTokenKey, token)
 		c.Next()
 	}
 }

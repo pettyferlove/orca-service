@@ -7,8 +7,8 @@ import (
 	"orca-service/global"
 	"orca-service/global/handler"
 	"orca-service/global/logger"
-	"orca-service/global/security"
 	"orca-service/global/security/token"
+	"orca-service/global/util"
 )
 
 type Token struct {
@@ -37,7 +37,7 @@ func (t Token) Create(c *gin.Context) {
 	userDetail := userService.LoadUserByUsername(loginRequest.Username)
 	if userService.Errors != nil {
 		logger.Error(userService.Errors.Error())
-		t.ResponseUnauthorizedMessage("User does not exist")
+		t.ResponseUnauthorizedMessage("用户不存在")
 		return
 	}
 	// 使用BCrypt进行密码校验
@@ -45,7 +45,7 @@ func (t Token) Create(c *gin.Context) {
 	// 清空密码
 	userDetail.Password = ""
 	if err != nil {
-		t.ResponseUnauthorizedMessage("Password error")
+		t.ResponseUnauthorizedMessage("用户名或密码错误")
 		return
 	}
 	store := token.NewRedisStore(global.RedisClient)
@@ -55,7 +55,7 @@ func (t Token) Create(c *gin.Context) {
 
 	}
 	if err != nil {
-		t.ResponseUnauthorizedMessage("Token creation failed")
+		t.ResponseUnauthorizedMessage("凭据生成失败")
 		return
 	}
 	t.Response(LoginResponse{Token: accessToken, Type: "Bearer"})
@@ -73,15 +73,17 @@ func (t Token) Delete(c *gin.Context) {
 // Refresh 刷新Token
 func (t Token) Refresh(context *gin.Context) {
 	t.MakeContext(context)
-	originalClaims, exists := t.Context.Get("original_claims")
+	oldToken, exists := t.Context.Get(util.AccessTokenKey)
 	if !exists {
-		t.ResponseBusinessError(1, "Token parsing failed")
+		t.ResponseUnauthorizedMessage("凭据不存在")
 		return
 	} else {
-		// 转换为JWTClaims
-		var _ = originalClaims.(*security.JWTClaims)
-
-		t.Response("")
+		store := token.NewRedisStore(global.RedisClient)
+		accessToken, err := store.RefreshAccessToken(oldToken.(string))
+		if err != nil {
+			return
+		}
+		t.Response(LoginResponse{Token: accessToken, Type: "Bearer"})
 		return
 	}
 }

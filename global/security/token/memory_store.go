@@ -39,7 +39,7 @@ func (m *MemoryStore) CreateAccessToken(user security.UserDetail) (string, error
 func (m *MemoryStore) RefreshAccessToken(token string) (string, error) {
 	value, ok := m.data.Load(token)
 	if !ok {
-		return "", errors.New("invalid token")
+		return "", errors.New("令牌无效")
 	}
 	value.(*tokenData).lastActivityTime = time.Now()
 	return token, nil
@@ -59,7 +59,7 @@ func (m *MemoryStore) RemoveAccessToken(user security.UserDetail) error {
 func (m *MemoryStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	value, ok := m.data.Load(token)
 	if !ok {
-		return nil, errors.New("invalid token")
+		return nil, errors.New("令牌无效")
 	}
 
 	data := value.(*tokenData)
