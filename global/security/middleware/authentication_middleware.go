@@ -3,7 +3,6 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"orca-service/global"
 	"orca-service/global/handler"
 	"orca-service/global/model"
 	store "orca-service/global/security/token"
@@ -24,7 +23,7 @@ func AuthenticationMiddleware() gin.HandlerFunc {
 			})
 			return
 		}
-		s := store.NewRedisStore(global.RedisClient).SetAllowMultiPoint(global.Config.Security.MultiLogin)
+		s := store.GetStore()
 		detail, err := s.VerifyAccessToken(token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, model.Response{

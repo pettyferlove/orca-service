@@ -2,7 +2,10 @@ package token
 
 import (
 	"orca-service/global/security"
+	"sync/atomic"
 )
+
+var defaultLogger atomic.Value
 
 // Store token store
 type Store interface {
@@ -18,4 +21,14 @@ type Store interface {
 
 	// VerifyAccessToken 验证访问令牌
 	VerifyAccessToken(token string) (*security.UserDetail, error)
+}
+
+// SetStore 设置默认的token store
+func SetStore(store Store) {
+	defaultLogger.Store(store)
+}
+
+// GetStore 获取默认的token store
+func GetStore() Store {
+	return defaultLogger.Load().(Store)
 }

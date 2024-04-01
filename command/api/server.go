@@ -10,6 +10,7 @@ import (
 	"orca-service/global"
 	log "orca-service/global/logger"
 	"orca-service/global/security"
+	"orca-service/global/security/token"
 	"orca-service/global/util"
 	"os"
 )
@@ -41,8 +42,8 @@ func run() error {
 		log.Error("error parsing configuration file", err)
 	}
 
+	// 设置默认日志级别
 	log.SetDefaultLoggerLevel(log.DebugLevel)
-
 	gin.SetMode(global.Config.Server.Mode)
 	r := gin.New()
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
@@ -61,24 +62,25 @@ func run() error {
 	if err != nil {
 		return err
 	}
-
 	// 初始化数据库
 	err = common.InitDatabase()
 	if err != nil {
 		return err
 	}
-
 	err = security.InitSecurityEngine()
 	if err != nil {
 		return err
 	}
+
+	// 初始化凭据存储
+	store := token.NewRedisStore(global.RedisClient).SetAllowMultiPoint(global.Config.Security.MultiLogin)
+	token.SetStore(store)
 
 	err = common.Migrate()
 	if err != nil {
 		log.Error("database migration failure")
 		return err
 	}
-
 	address := fmt.Sprintf("%s:%d", global.Config.Server.Host, global.Config.Server.Port)
 	return r.Run(address)
 }

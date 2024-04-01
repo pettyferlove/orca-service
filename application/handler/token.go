@@ -87,7 +87,7 @@ func (t Token) Create(c *gin.Context) {
 	} else {
 		userService.LoginSuccess(loginRequest.Username)
 	}
-	store := token.NewRedisStore(global.RedisClient).SetAllowMultiPoint(securityConfig.MultiLogin)
+	store := token.GetStore()
 	accessToken, err := store.CreateAccessToken(*userDetail)
 	if err != nil {
 		return
