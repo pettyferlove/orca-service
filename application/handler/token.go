@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"orca-service/application/model"
 	"orca-service/application/service"
 	"orca-service/global"
 	"orca-service/global/handler"
@@ -17,18 +18,8 @@ type Token struct {
 	handler.Handler
 }
 
-type LoginRequest struct {
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
-}
-
-type LoginResponse struct {
-	Token string `json:"token"`
-	Type  string `json:"type,default=Bearer"`
-}
-
 func (t Token) Create(c *gin.Context) {
-	var loginRequest LoginRequest
+	var loginRequest model.LoginRequest
 	var userService = service.User{}
 	securityConfig := global.Config.Security
 	err := t.MakeContext(c).MakeService(&userService.Service).Bind(&loginRequest).Errors
@@ -97,7 +88,7 @@ func (t Token) Create(c *gin.Context) {
 		t.ResponseUnauthorizedMessage("凭据生成失败")
 		return
 	}
-	t.Response(LoginResponse{Token: accessToken, Type: "Bearer"})
+	t.Response(model.LoginResponse{Token: accessToken, Type: "Bearer"})
 	return
 }
 
@@ -131,7 +122,7 @@ func (t Token) Refresh(context *gin.Context) {
 		if err != nil {
 			return
 		}
-		t.Response(LoginResponse{Token: accessToken, Type: "Bearer"})
+		t.Response(model.LoginResponse{Token: accessToken, Type: "Bearer"})
 		return
 	}
 }
