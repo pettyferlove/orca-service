@@ -13,6 +13,13 @@ type JwtStore struct {
 	key []byte
 }
 
+type JWTClaims struct {
+	security.UserDetail `json:"user_detail"`
+	Roles               []string `json:"roles"`
+	Permissions         []string `json:"permissions"`
+	jwt.StandardClaims
+}
+
 func NewJwtStore(key []byte) *JwtStore {
 	return &JwtStore{
 		key,
@@ -25,7 +32,7 @@ func (j *JwtStore) CreateAccessToken(user security.UserDetail) (string, error) {
 	user.Password = ""
 	user.Roles = nil
 	user.Permissions = nil
-	claims := security.JWTClaims{
+	claims := JWTClaims{
 		UserDetail:  user,
 		Roles:       roles,
 		Permissions: permissions,
@@ -52,13 +59,13 @@ func (j *JwtStore) RefreshAccessToken(token string) (string, error) {
 }
 
 // RemoveAccessToken remove access token，jwt无法撤销token，所以这里不做任何操作
-func (j *JwtStore) RemoveAccessToken(user security.UserDetail) error {
+func (j *JwtStore) RemoveAccessToken(_ security.UserDetail) error {
 	log.Debug("Remove access token")
 	return nil
 }
 
 func (j *JwtStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
-	c, err := jwt.ParseWithClaims(token, &security.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+	c, err := jwt.ParseWithClaims(token, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.key, nil
 	})
 	if err != nil {
@@ -76,7 +83,7 @@ func (j *JwtStore) VerifyAccessToken(token string) (*security.UserDetail, error)
 
 		}
 	}
-	claims, ok := c.Claims.(*security.JWTClaims)
+	claims, ok := c.Claims.(*JWTClaims)
 	if ok && c.Valid {
 		// 组装UserDetail
 		user := claims.UserDetail
