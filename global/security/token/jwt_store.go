@@ -64,6 +64,7 @@ func (j *JwtStore) RemoveAccessToken(_ security.UserDetail) error {
 	return nil
 }
 
+// VerifyAccessToken verify access token
 func (j *JwtStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	c, err := jwt.ParseWithClaims(token, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.key, nil

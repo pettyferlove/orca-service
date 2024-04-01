@@ -1,7 +1,7 @@
 package model
 
 type PermissionCreate struct {
-	ParentID           string `json:"parentId"`
+	ParentID           string `json:"parentId" validate:"omitempty,uuid4"`
 	Permission         string `json:"permission"`
 	PermissionName     string `json:"permissionName"`
 	PermissionType     string `json:"permissionType"`

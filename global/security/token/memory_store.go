@@ -19,10 +19,8 @@ type tokenData struct {
 
 func NewMemoryStore() *MemoryStore {
 	store := &MemoryStore{}
-
 	// 设置定时任务，每分钟检查一次过期的令牌
 	go store.startCleaningJob()
-
 	return store
 }
 
