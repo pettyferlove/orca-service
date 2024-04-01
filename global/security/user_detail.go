@@ -18,7 +18,6 @@ type UserDetail struct {
 	Email       string     `json:"email"`
 	Phone       string     `json:"phone"`
 	Channel     string     `json:"channel"`
-	Tenant      string     `json:"tenant"`
 	Status      UserStatus `json:"status"`
 	Roles       []string   `json:"roles"`
 	Permissions []string   `json:"permissions"`

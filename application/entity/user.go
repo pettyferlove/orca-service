@@ -8,7 +8,6 @@ import (
 type User struct {
 	Username          string         `gorm:"column:username;size:255;not null;comment:用户名"`
 	Password          string         `gorm:"column:password;size:255;not null;comment:登录密码"`
-	TenantId          string         `gorm:"column:tenant_id;size:128;not null;comment:租户ID"`
 	Channel           string         `gorm:"column:channel;size:128;not null;comment:渠道"`
 	Status            int8           `gorm:"column:status;not null;comment:状态"`
 	LoginFail         int            `gorm:"column:login_fail;comment:登录失败次数"`

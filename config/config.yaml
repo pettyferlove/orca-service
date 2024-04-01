@@ -24,3 +24,11 @@ database:
 kubernetes:
   host:
   port:
+security:
+  password-encrypt: false
+  encrypt-key: ""
+  multi-login: false
+  login-attempt:
+    enable: true
+    times-before-lock: 5
+    locking-duration: 1800

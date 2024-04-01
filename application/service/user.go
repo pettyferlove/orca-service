@@ -3,6 +3,7 @@ package service
 import (
 	"orca-service/application/entity"
 	"orca-service/application/model"
+	"orca-service/global"
 	user "orca-service/global/security"
 	"orca-service/global/service"
 	"time"
@@ -56,8 +57,7 @@ func (u *User) LoadUserByUsername(username string) *user.UserDetail {
 		Email:       userInfoEntity.Email,
 		Phone:       userInfoEntity.Phone,
 		Channel:     userEntity.Channel,
-		Tenant:      userEntity.TenantId,
-		Status:      user.Normal,
+		Status:      user.UserStatus(userEntity.Status),
 		Roles:       roles,
 		Permissions: permissions,
 	}
@@ -90,23 +90,59 @@ func (u *User) LoadLoginAttempts(username string) *model.LoginAttempts {
 
 // LoginFailed 方法用于处理登录失败后的逻辑
 func (u *User) LoginFailed(username string) {
-	// 业务逻辑
+	tx := u.DataBase.Begin()
+	security := global.Config.Security
+	loginAttempts := u.LoadLoginAttempts(username)
+	if loginAttempts == nil {
+		return
+	}
+	if loginAttempts.LastLoginFailTime.IsZero() {
+		err := u.LoginFailedForFailNum(username, 1)
+		if err != nil {
+			u.AddError(err)
+		}
+	} else {
+		if time.Now().Sub(loginAttempts.LastLoginFailTime) > time.Duration(security.LoginAttempt.LockingDuration) {
+			err := u.LoginFailedForFailNum(username, loginAttempts.LoginFailNum+1)
+			if err != nil {
+				u.AddError(err)
+			}
+		} else {
+			err := u.LoginFailedForFailNum(username, loginAttempts.LoginFailNum+1)
+			if err != nil {
+				u.AddError(err)
+			}
+		}
+	}
+	if loginAttempts.LoginFailNum+1 >= security.LoginAttempt.TimesBeforeLock {
+		err := u.LockUser(username)
+		if err != nil {
+			u.AddError(err)
+		}
+	}
+	if u.Errors != nil {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 }
 
 // LoginFailedForFailNum 方法用于处理登录失败次数过多后的逻辑
-func (u *User) LoginFailedForFailNum(username string, failNum int) {
+func (u *User) LoginFailedForFailNum(username string, failNum int) error {
 	if err := u.DataBase.Model(&entity.User{}).Where("username = ?", username).Updates(map[string]interface{}{"login_fail": failNum, "last_login_fail_time": time.Now()}).Error; err != nil {
-		u.AddError(err)
-		return
+		return err
+	} else {
+		return nil
 	}
 }
 
 // LockUser 方法用于锁定用户
-func (u *User) LockUser(username string) {
+func (u *User) LockUser(username string) error {
 	// 业务逻辑
 	if err := u.DataBase.Model(&entity.User{}).Where("username = ?", username).Updates(map[string]interface{}{"status": user.Locked}).Error; err != nil {
-		u.AddError(err)
-		return
+		return err
+	} else {
+		return nil
 	}
 }
 
