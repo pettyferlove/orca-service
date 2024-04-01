@@ -50,11 +50,9 @@ func run() error {
 		log.Debug("endpoint %v %v %v %v", httpMethod, absolutePath, handlerName, nuHandlers)
 	}
 	log.Debug("server run mode: " + global.Config.Server.Mode)
-
 	if err := util.InitTranslator("zh"); err != nil {
 		return err
 	}
-
 	// 初始化路由
 	router.InitRouter(r)
 	// 初始化Redis
