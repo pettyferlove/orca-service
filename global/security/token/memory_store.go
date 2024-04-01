@@ -59,7 +59,6 @@ func (m *MemoryStore) VerifyAccessToken(token string) (*security.UserDetail, err
 	if !ok {
 		return nil, errors.New("令牌无效")
 	}
-
 	data := value.(*tokenData)
 	data.lastActivityTime = time.Now() // 更新最后活跃时间
 	return &data.user, nil
