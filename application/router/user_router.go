@@ -1,6 +1,9 @@
 package router
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"orca-service/application/handler"
+)
 
 func init() {
 	router = append(router, registerUserRouter)
@@ -8,13 +11,14 @@ func init() {
 }
 
 func registerUserRouter(group *gin.RouterGroup) {
-	helloGroup := group.Group("/users")
-	helloGroup.GET("/page", nil)
-	helloGroup.GET("/:id", nil)
-	helloGroup.POST("/", nil)
-	helloGroup.PUT("/:id", nil)
-	helloGroup.DELETE("/:id", nil)
-	helloGroup.PUT("/current/roles", nil)
-	helloGroup.GET("/:id/roles", nil)
-	helloGroup.PUT("/:id/roles", nil)
+	user := handler.User{}
+	userGroup := group.Group("/users")
+	userGroup.GET("/page", user.Page)
+	userGroup.GET("/:id", user.Get)
+	userGroup.POST("/", user.Create)
+	userGroup.PUT("/:id", user.Update)
+	userGroup.DELETE("/:id", user.Delete)
+	userGroup.GET("/current/roles", user.CurrentRoles)
+	userGroup.GET("/:id/roles", user.GetRoles)
+	userGroup.PUT("/:id/roles", user.UpdateRoles)
 }
