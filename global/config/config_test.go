@@ -13,6 +13,16 @@ func TestConfig(t *testing.T) {
 			Port: 4000,
 			Mode: "debug",
 		},
+		Security: Security{
+			PasswordEncrypt: true,
+			EncryptKey:      "orca",
+			MultiLogin:      false,
+			LoginAttempt: LoginAttempt{
+				Enable:          true,
+				TimesBeforeLock: 5,
+				LockingDuration: 300,
+			},
+		},
 		Redis: Redis{
 			Host:     "127.0.0.1",
 			Port:     "6379",
