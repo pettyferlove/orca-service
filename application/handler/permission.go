@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"orca-service/application/model"
 	"orca-service/global/handler"
 )
 
@@ -22,7 +23,12 @@ func (p Permission) Get(c *gin.Context) {
 }
 
 func (p Permission) Create(c *gin.Context) {
-	p.MakeContext(c)
+	var permissionCreate model.PermissionCreate
+	err := p.MakeContext(c).Bind(&permissionCreate).Errors
+	if err != nil {
+		p.ResponseInvalidArgument(err.Error())
+		return
+	}
 	p.ResponseOk()
 	return
 }

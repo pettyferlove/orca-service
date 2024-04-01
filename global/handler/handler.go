@@ -62,7 +62,7 @@ func (handler *Handler) Bind(d interface{}, bindings ...binding.Binding) *Handle
 			err = handler.Context.ShouldBindWith(d, bindings[i])
 		}
 		if err != nil && err.Error() == "EOF" {
-			handler.AddError(errors.New("request body is not present anymore. "))
+			handler.AddError(errors.New("request body is not present anymore"))
 			break
 		}
 		if err != nil {
