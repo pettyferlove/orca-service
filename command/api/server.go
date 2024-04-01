@@ -35,13 +35,12 @@ func init() {
 func run() error {
 	file, err := os.ReadFile(configYaml)
 	if err != nil {
-		log.Error("error reading configuration file", err)
+		panic("error reading configuration file")
 	}
 	err = yaml.Unmarshal(file, &global.Config)
 	if err != nil {
-		log.Error("error parsing configuration file", err)
+		panic("error parsing configuration file")
 	}
-
 	// 设置默认日志级别
 	log.SetDefaultLoggerLevel(log.DebugLevel)
 	gin.SetMode(global.Config.Server.Mode)

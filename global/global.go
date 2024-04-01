@@ -9,7 +9,7 @@ import (
 
 const (
 	// ConfigFilePath 配置文件路径
-	ConfigFilePath = "config/config.yaml"
+	ConfigFilePath = "./config/config.yaml"
 )
 
 // 全局变量
