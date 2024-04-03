@@ -11,6 +11,11 @@ type Role struct {
 	Valid        bool           `gorm:"column:valid;not null;default:true;comment:是否有效"`
 	DeletedAt    gorm.DeletedAt `gorm:"index;comment:删除时间"`
 	BaseEntity
+	RolePermission []RolePermission `gorm:"foreignKey:role_id"`
+	RoleMenu       []RoleMenu       `gorm:"foreignKey:role_id"`
+	UserRole       []UserRole       `gorm:"foreignKey:role_id"`
+	Users          []User           `gorm:"many2many:s_user_role;joinForeignKey:role_id;joinReferences:user_id"`
+	Permissions    []Permission     `gorm:"many2many:s_role_permission;joinForeignKey:role_id;joinReferences:permission_id"`
 }
 
 func (Role) TableName() string {

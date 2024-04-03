@@ -64,7 +64,7 @@ func ConnectMysql(host, port, username, password, database string) (*gorm.DB, er
 				LogLevel:                  logger.Info, // GORM 日志级别
 				IgnoreRecordNotFoundError: true,
 				ParameterizedQueries:      true,
-				Colorful:                  false,
+				Colorful:                  true,
 			},
 		),
 	})

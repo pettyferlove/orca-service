@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Permission struct {
 	ParentId           string         `gorm:"column:parent_id;size:128;comment:父权限ID"`
-	Permission         string         `gorm:"column:permission;primaryKey;size:512;not null;comment:权限"`
+	Permission         string         `gorm:"column:permission;size:512;not null;comment:权限"`
 	PermissionMetadata string         `gorm:"column:permission_metadata;size:512;comment:权限元数据"`
 	PermissionMethod   string         `gorm:"column:permission_method;size:128;comment:权限方法"`
 	PermissionName     string         `gorm:"column:permission_name;size:512;not null;comment:权限名称"`
@@ -15,6 +15,8 @@ type Permission struct {
 	Valid              bool           `gorm:"column:valid;not null;default:true;comment:是否有效"`
 	DeletedAt          gorm.DeletedAt `gorm:"index;comment:删除时间"`
 	BaseEntity
+	Menu  *Menu  `gorm:"foreignKey:permission_id"`
+	Roles []Role `gorm:"many2many:s_role_permission;joinForeignKey:permission_id;joinReferences:role_id"`
 }
 
 func (Permission) TableName() string {

@@ -61,7 +61,7 @@ func (t Token) Create(c *gin.Context) {
 		loginAttempts := userService.LoadLoginAttempts(loginRequest.Username)
 		loginAttemptsConfig := securityConfig.LoginAttempt
 		if loginAttempts != nil {
-			loginAttemptLeft := loginAttemptsConfig.TimesBeforeLock - loginAttempts.LoginFailNum
+			loginAttemptLeft := loginAttemptsConfig.TimesBeforeLock - loginAttempts.LoginFail
 			if loginAttemptLeft < 0 {
 				loginAttemptLeft = 0
 			}

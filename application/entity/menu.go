@@ -13,6 +13,7 @@ type Menu struct {
 	Visible      bool           `gorm:"column:visible;not null;default:true;comment:是否可见"`
 	DeletedAt    gorm.DeletedAt `gorm:"index;comment:删除时间"`
 	BaseEntity
+	Permission Permission `gorm:"foreignKey:permission_id"`
 }
 
 func (Menu) TableName() string {

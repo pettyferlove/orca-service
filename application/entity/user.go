@@ -14,6 +14,9 @@ type User struct {
 	LastLoginFailTime time.Time      `gorm:"column:last_login_fail_time;comment:最后登录失败时间"`
 	DeletedAt         gorm.DeletedAt `gorm:"index;comment:删除时间"`
 	BaseEntity
+	UserInfo UserInfo   `gorm:"foreignKey:user_id"`
+	UserRole []UserRole `gorm:"foreignKey:user_id"`
+	Roles    []Role     `gorm:"many2many:s_user_role;joinForeignKey:user_id;joinReferences:role_id"`
 }
 
 func (User) TableName() string {

@@ -5,6 +5,6 @@ import "time"
 type LoginAttempts struct {
 	Id                string
 	Username          string
-	LoginFailNum      int
+	LoginFail         int
 	LastLoginFailTime time.Time
 }

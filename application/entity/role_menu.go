@@ -8,6 +8,8 @@ type RoleMenu struct {
 	ValidBegin time.Time `gorm:"column:valid_begin;comment:有效开始时间"`
 	ValidEnd   time.Time `gorm:"column:valid_end;comment:有效结束时间"`
 	BaseEntity
+	Role Role `gorm:"foreignKey:role_id"`
+	Menu Menu `gorm:"foreignKey:menu_id"`
 }
 
 func (RoleMenu) TableName() string {

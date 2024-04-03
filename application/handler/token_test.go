@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"orca-service/application/model"
 	"testing"
 )
 
 func BenchmarkToken_Create(b *testing.B) {
-	loginInfo := LoginRequest{
+	loginInfo := model.LoginRequest{
 		Username: "administrator",
 		Password: "123456",
 	}

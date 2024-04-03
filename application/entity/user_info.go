@@ -17,6 +17,7 @@ type UserInfo struct {
 	Address   string         `gorm:"column:address;size:400;comment:居住地址"`
 	DeletedAt gorm.DeletedAt `gorm:"index;comment:删除时间"`
 	BaseEntity
+	User *User `gorm:"foreignKey:user_id"`
 }
 
 func (UserInfo) TableName() string {
