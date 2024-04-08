@@ -1,6 +1,7 @@
 package service
 
 import (
+	"orca-service/application/constant/permission"
 	"orca-service/application/entity"
 	"orca-service/application/model"
 	"orca-service/global"
@@ -16,11 +17,14 @@ type User struct {
 // LoadUserByUsername 方法用于根据用户名加载用户信息
 func (u *User) LoadUserByUsername(username string) *user.UserDetail {
 	var userEntity = entity.User{}
+	// 优化子查询
+
 	if err := u.DataBase.
 		Model(&entity.User{}).
 		Preload("UserInfo").
 		Preload("Roles").
-		Preload("Roles.Permissions").Where("username = ?", username).First(&userEntity).Error; err != nil {
+		Preload("Roles.Permissions", "permission_type in (?)", []string{permission.API.String(), permission.BUTTON.String()}).
+		Where("username = ?", username).First(&userEntity).Error; err != nil {
 		u.AddError(err)
 		return nil
 	}
@@ -41,7 +45,7 @@ func (u *User) LoadUserByUsername(username string) *user.UserDetail {
 		Email:       userEntity.UserInfo.Email,
 		Phone:       userEntity.UserInfo.Phone,
 		Channel:     userEntity.Channel,
-		Status:      user.UserStatus(userEntity.Status),
+		Status:      userEntity.Status,
 		Roles:       roles,
 		Permissions: permissions,
 	}
