@@ -1,7 +1,7 @@
 package service
 
 import (
-	"orca-service/application/constant/permission"
+	"orca-service/application/constant"
 	"orca-service/application/entity"
 	"orca-service/application/model"
 	"orca-service/global"
@@ -23,7 +23,7 @@ func (u *User) LoadUserByUsername(username string) *user.UserDetail {
 		Model(&entity.User{}).
 		Preload("UserInfo").
 		Preload("Roles").
-		Preload("Roles.Permissions", "permission_type in (?)", []string{permission.API.String(), permission.BUTTON.String()}).
+		Preload("Roles.Permissions", "permission_type in (?)", []string{constant.API.String(), constant.BUTTON.String()}).
 		Where("username = ?", username).First(&userEntity).Error; err != nil {
 		u.AddError(err)
 		return nil
