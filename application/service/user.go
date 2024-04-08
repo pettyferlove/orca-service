@@ -23,7 +23,7 @@ func (u *User) LoadUserByUsername(username string) *user.UserDetail {
 		Model(&entity.User{}).
 		Preload("UserInfo").
 		Preload("Roles").
-		Preload("Roles.Permissions", "permission_type in (?)", []string{constant.API.String(), constant.BUTTON.String()}).
+		Preload("Roles.Permissions", "permission_type in (?)", []string{constant.ApiPermissionType.String(), constant.ButtonPermissionType.String()}).
 		Where("username = ?", username).First(&userEntity).Error; err != nil {
 		u.AddError(err)
 		return nil
