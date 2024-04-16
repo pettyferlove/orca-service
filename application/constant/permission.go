@@ -3,6 +3,9 @@ package constant
 // PermissionMethod 权限方法常量
 type PermissionMethod string
 
+// PermissionType 权限类型常量
+type PermissionType string
+
 const (
 	// GetPermissionMethod 查询
 	GetPermissionMethod PermissionMethod = "GET"
@@ -20,11 +23,30 @@ const (
 	HeadPermissionMethod PermissionMethod = "HEAD"
 )
 
+const (
+	// PagePermissionType 页面
+	PagePermissionType PermissionType = "PAGE"
+	// ApiPermissionType 接口
+	ApiPermissionType PermissionType = "API"
+	// ButtonPermissionType 按钮
+	ButtonPermissionType PermissionType = "BUTTON"
+	// FolderPermissionType 文件夹
+	FolderPermissionType PermissionType = "FOLDER"
+)
+
 // PermissionMethods 权限方法常量列表
 var PermissionMethods = []PermissionMethod{GetPermissionMethod, PostPermissionMethod, PutPermissionMethod, DeletePermissionMethod, PatchPermissionMethod, OptionsPermissionMethod, HeadPermissionMethod}
 
+// PermissionTypeTypeList 权限类型列表
+var PermissionTypeTypeList = []PermissionType{PagePermissionType, ApiPermissionType, ButtonPermissionType, FolderPermissionType}
+
 // String 转换为字符串
 func (p PermissionMethod) String() string {
+	return string(p)
+}
+
+// String 转换为字符串
+func (p PermissionType) String() string {
 	return string(p)
 }
 
