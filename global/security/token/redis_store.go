@@ -115,25 +115,6 @@ func (r *RedisStore) RefreshAccessToken(token string) (string, error) {
 	}
 }
 
-func (r *RedisStore) RemoveAccessToken(user security.UserDetail) error {
-	if !r.allowMultiPoint {
-		keys, err := r.redis.LRange(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username), 0, -1).Result()
-		if err != nil {
-			return errors.New("令牌无效")
-		}
-		for _, key := range keys {
-			err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, key)).Err()
-			if err != nil {
-				return errors.New("令牌无效")
-			}
-		}
-		err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username)).Err()
-		return errors.New("令牌无效")
-	} else {
-		return nil
-	}
-}
-
 func (r *RedisStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	duration, err := r.redis.TTL(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
 	if err != nil {
@@ -169,4 +150,57 @@ func (r *RedisStore) VerifyAccessToken(token string) (*security.UserDetail, erro
 	}
 	return &userDetailsObj, nil
 
+}
+
+func (r *RedisStore) RemoveAccessTokenByUser(user security.UserDetail) error {
+	if !r.allowMultiPoint {
+		keys, err := r.redis.LRange(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username), 0, -1).Result()
+		if err != nil {
+			return errors.New("令牌无效")
+		}
+		for _, key := range keys {
+			err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, key)).Err()
+			if err != nil {
+				return errors.New("令牌无效")
+			}
+		}
+		err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, user.Username)).Err()
+		return errors.New("令牌无效")
+	} else {
+		return nil
+	}
+}
+
+func (r *RedisStore) RemoveAccessTokenByToken(token string) error {
+	userDetails, err := r.redis.Get(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Result()
+	if err != nil {
+		return errors.New("令牌无效")
+	}
+	var userDetailsObj security.UserDetail
+	err = json.Unmarshal([]byte(userDetails), &userDetailsObj)
+	if err != nil {
+		return errors.New("令牌无效")
+	}
+	if !r.allowMultiPoint {
+		err = r.redis.LRem(context.Background(), fmt.Sprintf("%s:%s", r.usernameToAccessKeyPrefix, userDetailsObj.Username), 0, token).Err()
+		if err != nil {
+			return errors.New("令牌无效")
+		}
+	}
+	err = r.redis.Del(context.Background(), fmt.Sprintf("%s:%s", r.authToAccessKeyPrefix, token)).Err()
+	return errors.New("令牌无效")
+}
+
+func (r *RedisStore) RemoveAllAccessToken() error {
+	keys, err := r.redis.Keys(context.Background(), fmt.Sprintf("%s*", r.authToAccessKeyPrefix)).Result()
+	if err != nil {
+		return errors.New("令牌无效")
+	}
+	for _, key := range keys {
+		err = r.redis.Unlink(context.Background(), key).Err()
+		if err != nil {
+			return errors.New("令牌无效")
+		}
+	}
+	return nil
 }

@@ -37,6 +37,6 @@ func TestJwtStore(t *testing.T) {
 	assert.NotEqual(t, token, newToken)
 
 	// Test RemoveAccessToken
-	err = store.RemoveAccessToken(user)
+	err = store.RemoveAccessTokenByUser(user)
 	assert.Nil(t, err)
 }

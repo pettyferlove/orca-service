@@ -6,6 +6,11 @@ import (
 )
 
 var (
+	Version string
+	Build   string
+)
+
+var (
 	Command = &cobra.Command{
 		Use:     "version",
 		Short:   "Show version",
@@ -20,6 +25,7 @@ var (
 )
 
 func run() error {
-	fmt.Println("1.0.0")
+	fmt.Println("Version: ", Version)
+	fmt.Println("Build: ", Build)
 	return nil
 }

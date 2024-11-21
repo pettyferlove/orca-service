@@ -100,7 +100,7 @@ func (t Token) Delete(c *gin.Context) {
 		return
 	}
 	store := token.GetStore()
-	err = store.RemoveAccessToken(detail)
+	err = store.RemoveAccessTokenByUser(detail)
 	if err != nil {
 		t.ResponseUnauthorizedMessage("凭据删除失败")
 		return

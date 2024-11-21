@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 )
 
-var defaultLogger atomic.Value
+var defaultStore atomic.Value
 
 // Store token store
 type Store interface {
@@ -16,19 +16,25 @@ type Store interface {
 	// RefreshAccessToken 刷新访问令牌
 	RefreshAccessToken(token string) (string, error)
 
-	// RemoveAccessToken 移除访问令牌
-	RemoveAccessToken(user security.UserDetail) error
-
 	// VerifyAccessToken 验证访问令牌
 	VerifyAccessToken(token string) (*security.UserDetail, error)
+
+	// RemoveAccessTokenByUser 移除指定用户的所有访问令牌
+	RemoveAccessTokenByUser(user security.UserDetail) error
+
+	// RemoveAccessTokenByToken 移除指定访问令牌
+	RemoveAccessTokenByToken(token string) error
+
+	// RemoveAllAccessToken 移除所有访问令牌
+	RemoveAllAccessToken() error
 }
 
 // SetStore 设置默认的token store
 func SetStore(store Store) {
-	defaultLogger.Store(store)
+	defaultStore.Store(store)
 }
 
 // GetStore 获取默认的token store
 func GetStore() Store {
-	return defaultLogger.Load().(Store)
+	return defaultStore.Load().(Store)
 }

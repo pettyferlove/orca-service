@@ -33,4 +33,5 @@ func InitRedis() error {
 	}
 	global.RedisClient = r
 	return nil
+
 }

@@ -41,9 +41,6 @@ func InitSecurityEngine() error {
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		panic(err)
-	}
 	err = enforcer.LoadPolicy()
 	if err != nil {
 		panic(err)

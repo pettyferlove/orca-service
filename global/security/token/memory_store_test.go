@@ -31,7 +31,7 @@ func TestMemoryStore(t *testing.T) {
 	assert.Equal(t, token, newToken)
 
 	// 测试移除访问令牌
-	err = store.RemoveAccessToken(user)
+	err = store.RemoveAccessTokenByUser(user)
 	assert.Nil(t, err)
 
 	// 验证移除后的访问令牌

@@ -62,12 +62,6 @@ func (j *JwtStore) RefreshAccessToken(token string) (string, error) {
 	return "", errors.New("令牌不可用")
 }
 
-// RemoveAccessToken remove access token，jwt无法撤销token，所以这里不做任何操作
-func (j *JwtStore) RemoveAccessToken(_ security.UserDetail) error {
-	log.Debug("Remove access token")
-	return nil
-}
-
 // VerifyAccessToken verify access token
 func (j *JwtStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
 	c, err := jwt.ParseWithClaims(token, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -97,4 +91,22 @@ func (j *JwtStore) VerifyAccessToken(token string) (*security.UserDetail, error)
 		return &user, nil
 	}
 	return nil, nil
+}
+
+// RemoveAccessTokenByUser remove access token，jwt无法撤销token，所以这里不做任何操作
+func (j *JwtStore) RemoveAccessTokenByUser(_ security.UserDetail) error {
+	log.Debug("Remove access token by user")
+	return nil
+}
+
+// RemoveAccessTokenByToken remove access token，jwt无法撤销token，所以这里不做任何操作
+func (j *JwtStore) RemoveAccessTokenByToken(_ string) error {
+	log.Debug("Remove access token by token")
+	return nil
+}
+
+// RemoveAllAccessToken remove all access token，jwt无法撤销token，所以这里不做任何操作
+func (j *JwtStore) RemoveAllAccessToken() error {
+	log.Debug("Remove all access token")
+	return nil
 }

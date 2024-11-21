@@ -62,7 +62,7 @@ func TestRemoveAccessToken(t *testing.T) {
 	}
 
 	token, _ := store.CreateAccessToken(user)
-	err := store.RemoveAccessToken(user)
+	err := store.RemoveAccessTokenByUser(user)
 	assert.NoError(t, err)
 
 	val, err := rdb.Get(ctx, store.authToAccessKeyPrefix+token).Result()

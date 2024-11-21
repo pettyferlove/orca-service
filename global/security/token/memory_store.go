@@ -46,7 +46,17 @@ func (m *MemoryStore) RefreshAccessToken(token string) (string, error) {
 	return token, nil
 }
 
-func (m *MemoryStore) RemoveAccessToken(user security.UserDetail) error {
+func (m *MemoryStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
+	value, ok := m.data.Load(token)
+	if !ok {
+		return nil, errors.New("令牌无效")
+	}
+	data := value.(*tokenData)
+	data.lastActivityTime = time.Now() // 更新最后活跃时间
+	return &data.user, nil
+}
+
+func (m *MemoryStore) RemoveAccessTokenByUser(user security.UserDetail) error {
 	m.data.Range(func(key, value interface{}) bool {
 		data := value.(*tokenData)
 		if data.user.GetId() == user.GetId() {
@@ -57,14 +67,14 @@ func (m *MemoryStore) RemoveAccessToken(user security.UserDetail) error {
 	return nil
 }
 
-func (m *MemoryStore) VerifyAccessToken(token string) (*security.UserDetail, error) {
-	value, ok := m.data.Load(token)
-	if !ok {
-		return nil, errors.New("令牌无效")
-	}
-	data := value.(*tokenData)
-	data.lastActivityTime = time.Now() // 更新最后活跃时间
-	return &data.user, nil
+func (m *MemoryStore) RemoveAccessTokenByToken(token string) error {
+	m.data.Delete(token)
+	return nil
+}
+
+func (m *MemoryStore) RemoveAllAccessToken() error {
+	m.data = sync.Map{}
+	return nil
 }
 
 func (m *MemoryStore) startCleaningJob() {
